@@ -1,0 +1,10 @@
+13:11:21.869: Position 1: VX95
+13:11:21.869: Position 2: NK97
+13:11:21.869: Position 3: HG83
+13:11:21.871: Position 4: AO57
+13:11:21.872: Position 5: ZB09
+13:11:21.872: Position 6: XH63
+13:11:21.873: Position 7: LE28
+13:11:21.874: Position 8: GK19
+13:11:38.087: First command velocity received.
+13:11:59.594: Manual control enabled.
