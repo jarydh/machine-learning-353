@@ -1,0 +1,13 @@
+<launch>
+	<node pkg="my_controller"
+				type="driver_main.py"
+				name="driver_main"
+				output="screen">
+	</node>
+
+	<node pkg="my_controller"
+				type="license_plate_reader_main.py"
+				name="license_plate_reader_main"
+				output="screen">
+	</node>
+</launch>
