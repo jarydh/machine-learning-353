@@ -1,4 +1,5 @@
-# Used for converting images from ros to cv
+# Used for converting images from ros to CV
+# This is used specifically for driving the robot
 
 import rospy
 from cv_bridge import CvBridge
@@ -6,6 +7,8 @@ import cv2
 import numpy as np
 
 from sensor_msgs.msg import Image
+
+import cv_image_tools
 
 
 class imageConverter:
@@ -21,4 +24,8 @@ class imageConverter:
 		except CvBridgeError as e:
 			print(e)
 
-		cv2.imshow(cv_image)
+		# # print image for debugging
+		# cv2.imshow("1", cv_image)
+		# cv2.waitKey(3)
+
+		

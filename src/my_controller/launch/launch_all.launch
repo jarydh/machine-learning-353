@@ -1,13 +1,13 @@
 <launch>
-	<node pkg="my_controller"
-				type="driver_main.py"
-				name="driver_main"
-				output="screen">
-	</node>
+	<include file="$(find my_controller)/launch/robot_controller.launch">
+	</include>
 
-	<node pkg="my_controller"
-				type="license_plate_reader_main.py"
-				name="license_plate_reader_main"
+	<node pkg="enph353_utils"
+				name="sim"
+				type="run_sim.sh"
+				agrs="-vpg"
 				output="screen">
 	</node>
 </launch>
+
+TODO: FIX ARGS
