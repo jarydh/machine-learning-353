@@ -21,6 +21,7 @@ LIN_ACC = 2
 LIN_DEC = 1.5
 
 LIN_STOP = 0
+# note: do not try taking corners at speeds > 1, it will roll the car
 LIN_SLOW = 1
 LIN_FAST = 2
 
