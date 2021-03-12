@@ -7,16 +7,13 @@ class simTime:
 
 	def __init__(self):
 		self.clock_sub = rospy.Subscriber("/clock", Clock, self.next_time)
+		self.current_time_ms = 0
 
 	# This method gets called whenever there is a new image on the image_raw topic
 	def next_time(self, data):
-		self.current_time_ns = data.clock.nsecs
-		self.current_time_sec = data.clock.secs
+		self.current_time_ms = data.clock.secs * 10**3 + data.clock.nsecs / 10**6
 		# # print time for debugging
 		# print(self.current_time_ns)
 
-	def get_time_ns(self):
-		return self.current_time_ns
-
-	def get_time_sec(self):		
-		return self.current_time_sec
+	def get_time_ms(self):
+		return self.current_time_ms
