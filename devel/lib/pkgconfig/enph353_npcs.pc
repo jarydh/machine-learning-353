@@ -1,4 +1,4 @@
-prefix=/home/fizzer/ros_ws/devel
+prefix=/home/fizzer/machine-learning-353/devel
 
 Name: enph353_npcs
 Description: Description of enph353_npcs
