@@ -1,4 +1,4 @@
-prefix=/home/fizzer/ros_ws/install
+prefix=/home/fizzer/machine-learning-353/install
 
 Name: my_controller
 Description: Description of my_controller

@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/fizzer/ros_ws/devel/setup.sh
+    local-name: /home/fizzer/machine-learning-353/devel/setup.sh

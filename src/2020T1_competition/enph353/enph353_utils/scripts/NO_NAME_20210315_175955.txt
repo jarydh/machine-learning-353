@@ -1,0 +1,84 @@
+17:59:55.236: Position 1: MS97
+17:59:55.236: Position 2: ER85
+17:59:55.236: Position 3: AV98
+17:59:55.236: Position 4: MF73
+17:59:55.237: Position 5: EK92
+17:59:55.237: Position 6: JR67
+17:59:55.237: Position 7: KZ20
+17:59:55.237: Position 8: LU71
+17:59:55.416: Message received: teamid, password, 0, A4R8
+17:59:55.416: Plate location is not a number.
+17:59:55.443: Message received: teamid, password, 0, A4R8
+17:59:55.444: Plate location is not a number.
+17:59:55.544: Message received: teamid, password, 0, A4R8
+17:59:55.545: Plate location is not a number.
+17:59:55.644: Message received: teamid, password, 0, A4R8
+17:59:55.644: Plate location is not a number.
+17:59:55.743: Message received: teamid, password, 0, A4R8
+17:59:55.744: Plate location is not a number.
+17:59:55.844: Message received: teamid, password, 0, A4R8
+17:59:55.844: Plate location is not a number.
+17:59:55.944: Message received: teamid, password, 0, A4R8
+17:59:55.945: Plate location is not a number.
+17:59:56.043: Message received: teamid, password, 0, A4R8
+17:59:56.044: Plate location is not a number.
+17:59:56.144: Message received: teamid, password, 0, A4R8
+17:59:56.146: Plate location is not a number.
+17:59:56.244: Message received: teamid, password, 0, A4R8
+17:59:56.246: Plate location is not a number.
+17:59:56.344: Message received: teamid, password, 0, A4R8
+17:59:56.345: Plate location is not a number.
+17:59:56.443: Message received: teamid, password, 0, A4R8
+17:59:56.444: Plate location is not a number.
+17:59:56.543: Message received: teamid, password, 0, A4R8
+17:59:56.544: Plate location is not a number.
+17:59:56.644: Message received: teamid, password, 0, A4R8
+17:59:56.646: Plate location is not a number.
+17:59:56.744: Message received: teamid, password, 0, A4R8
+17:59:56.745: Plate location is not a number.
+17:59:56.844: Message received: teamid, password, 0, A4R8
+17:59:56.848: Plate location is not a number.
+17:59:56.943: Message received: teamid, password, 0, A4R8
+17:59:56.944: Plate location is not a number.
+17:59:57.044: Message received: teamid, password, 0, A4R8
+17:59:57.045: Plate location is not a number.
+17:59:57.144: Message received: teamid, password, 0, A4R8
+17:59:57.146: Plate location is not a number.
+17:59:57.244: Message received: teamid, password, 0, A4R8
+17:59:57.245: Plate location is not a number.
+17:59:57.343: Message received: teamid, password, 0, A4R8
+17:59:57.344: Plate location is not a number.
+17:59:57.444: Message received: teamid, password, 0, A4R8
+17:59:57.446: Plate location is not a number.
+17:59:57.543: Message received: teamid, password, 0, A4R8
+17:59:57.544: Plate location is not a number.
+17:59:57.643: Message received: teamid, password, 0, A4R8
+17:59:57.645: Plate location is not a number.
+17:59:57.744: Message received: teamid, password, 0, A4R8
+17:59:57.746: Plate location is not a number.
+17:59:57.843: Message received: teamid, password, 0, A4R8
+17:59:57.844: Plate location is not a number.
+17:59:57.944: Message received: teamid, password, 0, A4R8
+17:59:57.946: Plate location is not a number.
+17:59:58.044: Message received: teamid, password, 0, A4R8
+17:59:58.046: Plate location is not a number.
+17:59:58.144: Message received: teamid, password, 0, A4R8
+17:59:58.146: Plate location is not a number.
+17:59:58.244: Message received: teamid, password, 0, A4R8
+17:59:58.246: Plate location is not a number.
+17:59:58.344: Message received: teamid, password, 0, A4R8
+17:59:58.346: Plate location is not a number.
+17:59:58.444: Message received: teamid, password, 0, A4R8
+17:59:58.445: Plate location is not a number.
+17:59:58.544: Message received: teamid, password, 0, A4R8
+17:59:58.546: Plate location is not a number.
+17:59:58.644: Message received: teamid, password, 0, A4R8
+17:59:58.646: Plate location is not a number.
+17:59:58.744: Message received: teamid, password, 0, A4R8
+17:59:58.746: Plate location is not a number.
+17:59:58.844: Message received: teamid, password, 0, A4R8
+17:59:58.846: Plate location is not a number.
+17:59:58.944: Message received: teamid, password, 0, A4R8
+17:59:58.945: Plate location is not a number.
+17:59:59.044: Message received: teamid, password, 0, A4R8
+17:59:59.046: Plate location is not a number.

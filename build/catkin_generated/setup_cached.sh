@@ -7,4 +7,9 @@
 # new environment variables
 
 # modified environment variables
-export PWD='/home/fizzer/ros_ws/build'
+export CMAKE_PREFIX_PATH="/home/fizzer/machine-learning-353/devel:$CMAKE_PREFIX_PATH"
+export LD_LIBRARY_PATH="/home/fizzer/machine-learning-353/devel/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="/home/fizzer/machine-learning-353/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PWD='/home/fizzer/machine-learning-353/build'
+export PYTHONPATH="/home/fizzer/machine-learning-353/devel/lib/python2.7/dist-packages:$PYTHONPATH"
+export ROS_PACKAGE_PATH="/home/fizzer/ros_ws/src:/home/fizzer/machine-learning-353/src:$ROS_PACKAGE_PATH"
