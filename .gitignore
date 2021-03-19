@@ -1,5 +1,5 @@
 # Python cache
-*.pyc
+**/*.pyc
 
 # All files in competition ws
 src/2020T1_competition/
