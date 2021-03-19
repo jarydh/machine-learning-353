@@ -1,4 +1,4 @@
-prefix=/home/fizzer/machine-learning-353/install
+prefix=/home/fizzer/ros_ws/install
 
 Name: enph353_utils
 Description: Description of enph353_utils
