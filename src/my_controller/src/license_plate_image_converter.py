@@ -16,6 +16,15 @@ class imageConvert:
 	def __init__(self):
 		self.bridge = CvBridge()
 		self.image_sub = rp.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
+		self.outer_loop()
+
+	# call this if driving on the inner loop
+	def inner_loop(self):
+		self.on_outer_loop = False
+
+	# call this if driving on the outer loop
+	def outer_loop(self):
+		self.on_outer_loop = True
 
 	# Method everytime there is a new image
 	def new_image(self, data):
@@ -36,7 +45,11 @@ class imageConvert:
 		# crop image to bottom left corner since we don't need the full picture
 		y_min = 360 # min y coordinate
 		x_max = 574 # max x coordinate
-		cropped_img = cv_image[y_min:-1, 0:x_max, :]
+
+		if self.on_outer_loop:
+			cropped_img = cv_image[y_min:, :x_max, :]
+		else:
+			cropped_img = cv_image[y_min:, -x_max:, :]
 
 		cv2.imshow("cropped", cropped_img)
 
@@ -49,6 +62,10 @@ class imageConvert:
 		# crop image based on mask
 		cropped_mask = cropped_img[:,left_crop:right_crop,:]
 		cropped_mask_hsv = hsv_img[:,left_crop:right_crop,:]
+
+		# no blue at all
+		if cropped_mask.size == 0:
+			return(None, None)
 
 		cv2.imshow("cropped_mask", cropped_mask)
 
@@ -63,12 +80,34 @@ class imageConvert:
 			# No license plate found
 			return(None, None)
 
-		# shift coordinates up to find 
+		tl = plate_pts[0]
+		tr = plate_pts[1]
+		br = plate_pts[2]
+		bl = plate_pts[3]
+		width = tr[0]
+
+		# shift coordinates up to find stall number
+		left_scale = bl[1] - tl[1]
+		right_scale = br[1] - tr[1]
+
+		# how many times the height of the plate should we move up
+		top_scale = 2.2
+		bot_scale = 1.3
+
+		stall_pts = np.array([
+			[0, tl[1] - left_scale * top_scale],
+			[width, tr[1] - right_scale * top_scale],
+			[width, br[1] - right_scale * bot_scale],
+			[0, bl[1]] - left_scale * bot_scale], dtype = "float32")
+
+		# transform stall
+		stall_transform = self.perpective_transform(stall_pts, cropped_mask)
+
+		cv2.imshow("plate", plate_transform)
+		cv2.imshow("stall", stall_transform)
 
 
-
-
-		return(plate_transform,1)
+		return(plate_transform,stall_transform)
 
 
 	# takes HSV image, returns left and right coordinates to vertically crop around the blue color
@@ -113,7 +152,7 @@ class imageConvert:
 		# set thresholds for grey
 		uh = 121
 		us = 32
-		uv = 119
+		uv = 193
 		lh = 95
 		ls = 0
 		lv = 89
@@ -133,19 +172,23 @@ class imageConvert:
 		right_sum = np.sum(plate_masked[:,-num_pixels:], axis=1) / 255
 
 		# number of pixels present
-		pixel_threshold = 2
+		pixel_threshold = 3
 		left_sum = np.array([1 if next_sum >= pixel_threshold else 0 for next_sum in left_sum])
 		right_sum = np.array([1 if next_sum >= pixel_threshold else 0 for next_sum in right_sum])
 
-		# gets the first 1
-		left_top = np.argmax(left_sum)
-		# gets the last 1
-		left_bottom = np.size(left_sum) - 1 - np.argmax(np.flip(left_sum))
+		# ignores certain number of pixels on the top and botom
+		top_ignore = 20
+		bot_ignore = 150
 
 		# gets the first 1
-		right_top = np.argmax(right_sum)
+		left_top = np.argmax(left_sum[top_ignore:]) + top_ignore
 		# gets the last 1
-		right_bottom = np.size(right_sum) - 1 - np.argmax(np.flip(right_sum))
+		left_bottom = np.size(left_sum) - 1 - np.argmax(np.flip(left_sum[:-bot_ignore])) - bot_ignore
+
+		# gets the first 1
+		right_top = np.argmax(right_sum[top_ignore:]) + top_ignore
+		# gets the last 1
+		right_bottom = np.size(right_sum) - 1 - np.argmax(np.flip(right_sum[:-bot_ignore])) - bot_ignore
 
 		width = np.shape(cropped_mask_hsv)[1]
 		
@@ -200,8 +243,6 @@ class imageConvert:
 		try:
 			transform_matrix = cv2.getPerspectiveTransform(pts, destination_pts)
 			transformed = cv2.warpPerspective(cropped_mask, transform_matrix, (maxWidth, maxHeight))
-
-			cv2.imshow("plate", transformed)		
 
 			# if the plate detected is less than this number of pixels, assume we haven't found a plate
 			plate_width_thresh = 15
