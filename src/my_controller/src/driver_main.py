@@ -29,5 +29,5 @@ driver.set_angular_speed(dc.ANG_STRAIGHT)
 # do nothing and loop to keep node active
 rate = rospy.Rate(10)
 while not rospy.is_shutdown():
-	driver.drive()
+	# driver.drive()
 	rate.sleep()

@@ -25,6 +25,8 @@ LIN_STOP = 0
 LIN_SLOW = 1
 LIN_FAST = 2
 
+LIN_SLOW = 0.2
+
 # through trial and error, discovered that instantaneous angular acceleration 
 # does not flip the car
 

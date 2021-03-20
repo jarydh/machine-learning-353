@@ -63,14 +63,23 @@ class imageConvert:
 		cropped_mask = cropped_img[:,left_crop:right_crop,:]
 		cropped_mask_hsv = hsv_img[:,left_crop:right_crop,:]
 
-		# no blue at all
-		if cropped_mask.size == 0:
-			return(None, None)
-
 		cv2.imshow("cropped_mask", cropped_mask)
+
+
+		# blue section does not meet threshold to get meaningful data
+		blue_width_min = 40
+		blue_width_max = 300
+
+		if np.shape(cropped_mask)[1] < blue_width_min or np.shape(cropped_mask)[1] > blue_width_max:
+			return (None, None)
+
 
 		# get coordinates for transforming plate
 		plate_pts = self.apply_grey_hsv_mask(cropped_mask_hsv)
+
+		# no plate found
+		if plate_pts is None:
+			return(None, None)
 
 		# transform plate
 		plate_transform = self.perpective_transform(plate_pts, cropped_mask)
@@ -79,6 +88,16 @@ class imageConvert:
 		if plate_transform is None:
 			# No license plate found
 			return(None, None)
+
+		# TODO: not working, sometimes plate can have width > 160
+		# # plate section does not meet relative shape threshold
+		# plate_width_min = 30
+		# plate_width_max = 150
+
+		# print(np.shape(plate_transform))
+
+		# # if np.shape(plate_transform)[1] < plate_width_min or np.shape(plate_transform)[1] > plate_width_max:
+		# # 	return (None, None)
 
 		tl = plate_pts[0]
 		tr = plate_pts[1]
@@ -107,7 +126,7 @@ class imageConvert:
 		cv2.imshow("stall", stall_transform)
 
 
-		return(plate_transform,stall_transform)
+		return(plate_transform, stall_transform)
 
 
 	# takes HSV image, returns left and right coordinates to vertically crop around the blue color
@@ -134,11 +153,12 @@ class imageConvert:
 
 		# threshold to percent of max
 		max_sum = np.max(masked_sum)
-		percent = 0.8
+		percent = 0.7
 		masked_sum_thresh = np.array([1 if next_sum > max_sum * percent else 0 for next_sum in masked_sum])
 
 		# # for debugging
 		# percent_max = np.array([next_sum / float(max_sum) for next_sum in masked_sum])
+		# print(percent_max)
 
 		# gets the first 0 after the first 1
 		left_crop = np.argmin(masked_sum_thresh[np.argmax(masked_sum_thresh):]) + np.argmax(masked_sum_thresh) - 1
@@ -171,10 +191,16 @@ class imageConvert:
 		left_sum = np.sum(plate_masked[:,:num_pixels], axis=1) / 255
 		right_sum = np.sum(plate_masked[:,-num_pixels:], axis=1) / 255
 
+
 		# number of pixels present
 		pixel_threshold = 3
+
 		left_sum = np.array([1 if next_sum >= pixel_threshold else 0 for next_sum in left_sum])
 		right_sum = np.array([1 if next_sum >= pixel_threshold else 0 for next_sum in right_sum])
+
+		# no plate at all
+		if np.sum(left_sum + right_sum) == 0:
+			return None
 
 		# ignores certain number of pixels on the top and botom
 		top_ignore = 20
