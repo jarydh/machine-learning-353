@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 
 
-SAVE_FOLDER = "driving_data/"
+SAVE_FOLDER = "/home/fizzer/ros_ws/src/my_controller/src/driving_data/"
 
 
 class driverPickler:

@@ -1,0 +1,13 @@
+<launch>
+	<node pkg="my_controller"
+				type="keyboard_driver.py"
+				name="keyboard_driver"
+				output="screen">
+	</node>
+
+	<node pkg="my_controller"
+				type="keyboard_reader.py"
+				name="keyboard_reader"
+				output="screen">
+	</node>
+</launch>

@@ -4,32 +4,14 @@
 # to run, call:
 # rosrun my_controller keyboard_driver.py
 
-import sys, select, termios, tty
 import rospy
 
 from timer import simTime
 import driver_controller as dc
 import driver_image_recorder as rec
 
+from std_msgs.msg import Char
 
-msg = """
-Reading from the keyboard and Publishing to Twist!
----------------------------
-Driving straight:
-    i: fast
-    k: slow
-    m: stop
-Angular speed:
-    a: left
-    s: straight
-    d: right
-
-spacebar: toggle recording
-
-(currently commented out to stop accidents) anything else : stop
-
-CTRL-C to quit
-"""
 
 linBindings = {
         'm':dc.LIN_STOP,
@@ -49,68 +31,72 @@ angBindings = {
         'D':dc.ANG_RIGHT,
     }
 
-def getKey(key_timeout):
-    tty.setraw(sys.stdin.fileno())
-    rlist, _, _ = select.select([sys.stdin], [], [], key_timeout)
-    if rlist:
-        key = sys.stdin.read(1)
-    else:
-        key = ''
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-    return key
 
-if __name__=="__main__":
-    settings = termios.tcgetattr(sys.stdin)
+def newKey(data):
+    global key_in
+    key_in = chr(data.data)
 
-    sim_time = simTime()
+def getKey():
+    global key_in
+    return key_in
 
+def resetKey():
+    global key_in
+    key_in = ''
 
-    # initialize ros node
-    rospy.init_node('driver_keyboard')
+## MAIN PROGRAM
+key_in = ''
 
-    # driver object
-    driver = dc.driverController(sim_time)
-
-    # recorder object
-    recorder = rec.driverImageRecorder(driver)
-    period = 0.1 # seconds between each recorded frame
+key_in_sub = rospy.Subscriber('/keyboard_input', Char, newKey)
 
 
-    try:
-        print(msg)
-        print("RECORDING OFF") 
-        while not rospy.is_shutdown():
-            key = getKey(period)
-            # print(key)
-            
-            # exit
-            if (key == '\x03'):
-                    break
-            elif key in linBindings.keys():
-                # print("yes")
-                # print(linBindings[key])
-                driver.set_linear_speed(linBindings[key])
-            elif key in angBindings.keys():
-                # print("yes")
-                # print(linBindings[key])
-                driver.set_angular_speed(angBindings[key])
-            elif key == ' ':
-                recorder.toggle_is_recording()
-            # any other key, stop the car
-            elif key != '':
-                print("Unrecognized key")
-                # driver.set_linear_speed(0)
-                # driver.set_angular_speed(0)
-            
-            driver.drive()
+sim_time = simTime()
 
-            # will only save image if recording is toggle on
-            recorder.capture_frame()
-    except Exception as e:
-        print(e)
 
-    finally:
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+# initialize ros node
+rospy.init_node('driver_keyboard')
+
+# driver object
+driver = dc.driverController(sim_time)
+
+# recorder object
+recorder = rec.driverImageRecorder(driver)
+rate = rospy.Rate(10)
+loop = 0
+
+print("RECORDING OFF") 
+while not rospy.is_shutdown():
+    key = getKey()
+    # print(key)
+    
+    # exit
+    if (key == '\x03'):
+            break
+    elif key in linBindings.keys():
+        # print("yes")
+        # print(linBindings[key])
+        driver.set_linear_speed(linBindings[key])
+    elif key in angBindings.keys():
+        # print("yes")
+        # print(linBindings[key])
+        driver.set_angular_speed(angBindings[key])
+    elif key == ' ':
+        recorder.toggle_is_recording()
+    # any other key, stop the car
+    elif key != '':
+        print("Unrecognized key")
+        # driver.set_linear_speed(0)
+        # driver.set_angular_speed(0)
+    
+    resetKey()
+    driver.drive()
+
+    # will only save image if recording is toggle on
+    recorder.capture_frame()
+    rate.sleep()
+    # print(loop)
+    loop += 1
+
 
     # rate = rospy.Rate(10)
     # while not rospy.is_shutdown():
