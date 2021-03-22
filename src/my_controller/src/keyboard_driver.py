@@ -93,6 +93,7 @@ while not rospy.is_shutdown():
 
     # will only save image if recording is toggle on
     recorder.capture_frame()
+    # print("loop: "+ str(loop))
     rate.sleep()
     # print(loop)
     loop += 1

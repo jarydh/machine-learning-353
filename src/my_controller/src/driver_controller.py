@@ -22,10 +22,8 @@ LIN_DEC = 1.5
 
 LIN_STOP = 0
 # note: do not try taking corners at speeds > 1, it will roll the car
-LIN_SLOW = 1
-LIN_FAST = 2
-
-LIN_SLOW = 0.2
+LIN_SLOW = 0.5
+LIN_FAST = 1
 
 # through trial and error, discovered that instantaneous angular acceleration 
 # does not flip the car

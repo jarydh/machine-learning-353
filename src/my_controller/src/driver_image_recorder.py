@@ -54,6 +54,8 @@ class driverImageRecorder:
             self.is_recording = False
             # save current recording in pickle file
             self.driver_pickler.save_pickle(self.current_recording_timestamp, self.recorded_frames, self.recorded_speeds)
+            self.recorded_frames = []
+            self.recorded_speeds = []   
         else:
             print("RECORDING ON")
             self.current_recording_timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
