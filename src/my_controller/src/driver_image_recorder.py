@@ -24,7 +24,7 @@ class driverImageRecorder:
         self.image_sub = rospy.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
         self.is_recording = False
         self.current_frame = None
-        self.recorded_frames = None
+        self.recorded_frames = []
         self.recorded_speeds = []   
         self.current_recording_timestamp = None
         self.driver_pickler = dp.driverPickler()       
@@ -53,8 +53,7 @@ class driverImageRecorder:
             print("RECORDING OFF")
             self.is_recording = False
             # save current recording in pickle file
-            self.driver_pickler.save_pickle(self.current_recording_timestamp, self.current_recording)
-            print("Saved file: " + self.current_recording_timestamp + ".pickle")
+            self.driver_pickler.save_pickle(self.current_recording_timestamp, self.recorded_frames, self.recorded_speeds)
         else:
             print("RECORDING ON")
             self.current_recording_timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
@@ -65,13 +64,6 @@ class driverImageRecorder:
             frame = self.current_frame
             target_speeds = (self.driver.get_linear_speed(), self.driver.get_angular_speed())
 
-            if self.recorded_frames is None:
-                self.recorded_frames = np.array(frame)
-                self.recorded_frames = np.expand_dims(self.recorded_frames, axis = 3)
-            else:
-                print(np.shape(frame))
-                self.recorded_frames = np.append(self.recorded_frames, frame, axis = 3)
+            self.recorded_frames.append(frame)
             self.recorded_speeds.append(target_speeds)
-            print(np.shape(self.recorded_frames))
-            print(len(self.recorded_speeds))
 

@@ -2,6 +2,7 @@
 import pickle
 import numpy as np
 
+
 SAVE_FOLDER = "driving_data/"
 
 
@@ -10,21 +11,30 @@ class driverPickler:
         self.folder = SAVE_FOLDER
 
     def save_pickle(self, filename, frames, speeds):
-        with open(self.folder + filename + ".pickle", 'wb') as f:
-            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        with open(self.folder + filename + "_imgs" + ".pickle", 'wb') as f:
+            pickle.dump(frames, f, pickle.HIGHEST_PROTOCOL)
+        print("Saved file: " + filename + "_imgs.pickle")
+
+        with open(self.folder + filename + "_speeds" + ".pickle", 'wb') as f:
+            pickle.dump(speeds, f, pickle.HIGHEST_PROTOCOL)
+        print("Saved file: " + filename + "_speeds.pickle")
+
 
     # returns a tuple of type ([RGB image numpy array], [target_lin, target_ang])
     def load_pickle(self, filename):
         try:
-            with open(self.folder + filename + ".pickle", 'rb') as f:
-                data = pickle.load(f)
-            print("Loaded file: {}".format(filename + ".pickle"))
+            with open(self.folder + filename + "_imgs" + ".pickle", 'rb') as f:
+                frames = pickle.load(f)
+            print("Loaded file: {}".format(filename + "_imgs.pickle"))
         except IOError:
             print("Invalid pickle file.")
 
-        return (np.array(data[0]), data[1])
+        try:
+            with open(self.folder + filename + "_speeds" + ".pickle", 'rb') as f:
+                speeds = pickle.load(f)
+            print("Loaded file: {}".format(filename + "_speeds.pickle"))
+        except IOError:
+            print("Invalid pickle file.")
 
+        return (np.array(frames), speeds)
 
-
-
-        # 
