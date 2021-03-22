@@ -55,6 +55,12 @@ class driverController:
 	def set_angular_speed(self, speed):
 		self.target_angular_speed = float(speed)
 
+	def get_linear_speed(self):
+		return self.target_linear_speed
+
+	def get_angular_speed(self):
+		return self.target_angular_speed
+
 	def drive(self):
 		current_time = self.timer.get_time_ms()
 		time_elapsed = current_time - self.last_time_ms

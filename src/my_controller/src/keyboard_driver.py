@@ -9,6 +9,8 @@ import rospy
 
 from timer import simTime
 import driver_controller as dc
+import driver_image_recorder as rec
+
 
 msg = """
 Reading from the keyboard and Publishing to Twist!
@@ -22,7 +24,9 @@ Angular speed:
     s: straight
     d: right
 
-anything else : stop
+spacebar: toggle recording
+
+(currently commented out to stop accidents) anything else : stop
 
 CTRL-C to quit
 """
@@ -67,11 +71,16 @@ if __name__=="__main__":
     # driver object
     driver = dc.driverController(sim_time)
 
+    # recorder object
+    recorder = rec.driverImageRecorder(driver)
+    period = 0.1 # seconds between each recorded frame
+
 
     try:
         print(msg)
+        print("RECORDING OFF") 
         while not rospy.is_shutdown():
-            key = getKey(0.1)
+            key = getKey(period)
             # print(key)
             
             # exit
@@ -85,12 +94,18 @@ if __name__=="__main__":
                 # print("yes")
                 # print(linBindings[key])
                 driver.set_angular_speed(angBindings[key])
+            elif key == ' ':
+                recorder.toggle_is_recording()
             # any other key, stop the car
             elif key != '':
-                driver.set_linear_speed(0)
-                driver.set_angular_speed(0)
+                print("Unrecognized key")
+                # driver.set_linear_speed(0)
+                # driver.set_angular_speed(0)
             
             driver.drive()
+
+            # will only save image if recording is toggle on
+            recorder.capture_frame()
     except Exception as e:
         print(e)
 
