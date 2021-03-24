@@ -5,6 +5,9 @@ import numpy as np
 import re
 import os
 import fnmatch
+import cv2
+
+from datetime import datetime
 
 from collections import Counter
 from PIL import Image
@@ -40,10 +43,11 @@ for dirpath, dirs, files in os.walk(path + "driving_data/"):
 
 		images.append(in_pickle[0])
 		directions.append(in_pickle[1])
-	
 
-plt.imshow(images[0][0])
-plt.show()	
+# cv2.imshow("1", images[0][1])
+# cv2.waitKey(0)
+	
+# plt.show()	
 # print(directions[0])
 # print(np.shape(images[0][0]))
 # print(len(images))
@@ -142,8 +146,8 @@ for label in group_directions:
 
 	index += 1
 
-#print(np.shape(one_hot_data))
-#print(one_hot_data[8])
+# print(np.shape(one_hot_data))
+# print(one_hot_data[8])
 
 ###NORMALIZING IMAGES####
 
@@ -172,9 +176,33 @@ for group in image_data:
 
 	image_Data[spot] = combined_arr
 
+	spot+=1
+
 # print(combined_arr)
 # print(np.shape(combined_arr))
 # print(np.shape(image_Data))
+# print(image_Data[8])
+
+######################SHUFFLE DATA######################
+all_data = []
+
+for img_idx, next_img in enumerate(image_Data):
+	 	next_label = one_hot_data[img_idx]
+		data_pair = np.array([next_img, next_label])
+		all_data.append(data_pair)
+
+#print(all_data[300])
+#print(np.shape(all_data))
+
+np.random.shuffle(all_data)
+
+
+X_dataset = np.array([data[0] for data in all_data[:]])
+Y_dataset = np.array([data[1] for data in all_data])
+
+# print(np.shape(X_dataset))
+# print(np.shape(Y_dataset))
+
 
 VALIDATION_SPLIT = 0.2
 # print("Total examples: {:f}\nTraining examples: {:f}\nTest examples: {:f}".
@@ -195,7 +223,7 @@ def reset_weights(model):
 
 conv_model = models.Sequential()
 conv_model.add(layers.Conv2D(32, (3, 3), activation='relu',
-                             input_shape=np.shape(image_Data[0])))
+                             input_shape=np.shape(X_dataset[0])))
 conv_model.add(layers.MaxPooling2D((2, 2)))
 conv_model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 conv_model.add(layers.MaxPooling2D((2, 2)))
@@ -208,28 +236,21 @@ conv_model.add(layers.Dropout(0.5))
 conv_model.add(layers.Dense(512, activation='relu'))
 conv_model.add(layers.Dense(9, activation='softmax'))
 
-conv_model.summary()
+#conv_model.summary()
 
 
 ################SETTING UP FOR TRAINING###############
 
-# LEARNING_RATE = 1e-4
-# conv_model.compile(loss='categorical_crossentropy', optimizer=optimizers.RMSprop(lr=LEARNING_RATE),metrics=['acc'])
+LEARNING_RATE = 1e-4
+conv_model.compile(loss='categorical_crossentropy', optimizer=optimizers.RMSprop(lr=LEARNING_RATE),metrics=['acc'])
 
 
-# reset_weights(conv_model)
+reset_weights(conv_model)
 
-# history_conv = conv_model.fit(image_Data, one_hot_data, validation_split=VALIDATION_SPLIT, epochs=20, batch_size=16)
-
-# plt.plot(history_conv.history['loss'])
-# plt.plot(history_conv.history['val_loss'])
-# plt.title('model loss')
-# plt.ylabel('loss')
-# plt.xlabel('epoch')
-# plt.legend(['train loss', 'val loss'], loc='upper left')
-# plt.show()
+history_conv = conv_model.fit(X_dataset, Y_dataset, validation_split=VALIDATION_SPLIT, epochs=20, batch_size=16)
 
 
-
-
+save_dirpath =  path + "driving_models/driver_" +  datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+conv_model.save(save_dirpath)
+print("Saved to: " + save_dirpath)
 
