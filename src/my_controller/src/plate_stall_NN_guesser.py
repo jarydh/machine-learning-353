@@ -1,11 +1,18 @@
 # used for guessing text using the NN
 
+#Failed bug fix
+# import tensorflow as tf
+# graph = tf.get_default_graph()
 from tensorflow.keras import models
-from tensorflow.python.keras.backend import set_session
 
+from tensorflow.python.keras import layers
+from tensorflow.python.keras import models
+from tensorflow.python.keras import optimizers
+
+from tensorflow.python.keras.utils import plot_model
+from tensorflow.python.keras import backend
 
 import numpy as np
-import tensorflow as tf
 
 import cv2
 import os
@@ -13,8 +20,6 @@ import fnmatch
 
 NN_DIR = os.path.dirname(os.path.realpath(__file__)) + "/plate_stall_NN/"
 
-graph = tf.get_default_graph()
-sess = tf.Session()
 
 # pixel values for cropping plate images
 CHAR_WIDTH = 100
@@ -39,10 +44,12 @@ class plateStallGuesser:
     def loadNN(self):
         # look for NN files
         for dirpath, dirs, files in os.walk(self.dir):
-            # get the plate NN
+            # get the plate NN path
             plate_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'plate*')[0])
 
         self.plate_NN = models.load_model(plate_NN_path)
+        self.plate_NN.summary()
+
         print("Loaded plate NN from: " + plate_NN_path)
 
 
@@ -87,12 +94,13 @@ class plateStallGuesser:
         certainty = 1
         for next_char in chars:
             char_aug = np.expand_dims(next_char, axis=0)
-            global graph
-            global sess
-            with graph.as_default():
-                set_session(sess)
-                one_hot_prediction = self.plate_NN.predict(char_aug)[0]
-            # one_hot_prediction = self.plate_NN.predict(char_aug)[0]
+
+            # # failed bug fix
+            # global graph
+            # with graph.as_default():
+            #     one_hot_prediction = self.plate_NN.predict(char_aug)[0]
+            
+            one_hot_prediction = self.plate_NN.predict(char_aug)[0]
             certainty, prediction = self.one_hot_to_char(one_hot_prediction)
             guess = guess + str(prediction)
             certainty *= certainty

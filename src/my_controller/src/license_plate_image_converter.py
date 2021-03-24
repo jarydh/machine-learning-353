@@ -37,7 +37,6 @@ class imageConvert:
             print(e)
 
         plate, stall = self.get_images(cv_image)
-
         if plate is not None:
             plate_certainty, plate_prediction = self.ps_guesser.guess_plate(plate)
 
