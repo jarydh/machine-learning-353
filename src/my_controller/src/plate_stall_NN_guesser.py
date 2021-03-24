@@ -1,16 +1,16 @@
 # used for guessing text using the NN
 
-#Failed bug fix
+# #Failed bug fix
 # import tensorflow as tf
 # graph = tf.get_default_graph()
 from tensorflow.keras import models
 
-from tensorflow.python.keras import layers
-from tensorflow.python.keras import models
-from tensorflow.python.keras import optimizers
+# from tensorflow.python.keras import layers
+# from tensorflow.python.keras import models
+# from tensorflow.python.keras import optimizers
 
-from tensorflow.python.keras.utils import plot_model
-from tensorflow.python.keras import backend
+# from tensorflow.python.keras.utils import plot_model
+# from tensorflow.python.keras import backend
 
 import numpy as np
 
@@ -97,8 +97,8 @@ class plateStallGuesser:
 
             # # failed bug fix
             # global graph
-            # with graph.as_default():
-            #     one_hot_prediction = self.plate_NN.predict(char_aug)[0]
+            with graph.as_default():
+                one_hot_prediction = self.plate_NN.predict(char_aug)[0]
             
             one_hot_prediction = self.plate_NN.predict(char_aug)[0]
             certainty, prediction = self.one_hot_to_char(one_hot_prediction)
