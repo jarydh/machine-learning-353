@@ -251,6 +251,6 @@ history_conv = conv_model.fit(X_dataset, Y_dataset, validation_split=VALIDATION_
 
 
 save_dirpath =  path + "driving_models/driver_" +  datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-conv_model.save(save_dirpath)
+conv_model.save_model(save_dirpath)
 print("Saved to: " + save_dirpath)
 
