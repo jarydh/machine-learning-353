@@ -1,12 +1,11 @@
 # used for guessing text using the NN
 
+import tensorflow as tf
+
 from tensorflow.keras import models
 
 from tensorflow.python.keras.backend import set_session
 from tensorflow.python.keras.models import load_model
-
-from tensorflow.python.keras.utils import plot_model
-from tensorflow.python.keras import backend
 
 import numpy as np
 
@@ -14,7 +13,6 @@ import cv2
 import os
 import fnmatch
 
-import tensorflow as tf
 
 NN_DIR = os.path.dirname(os.path.realpath(__file__)) + "/plate_stall_NN/"
 
@@ -49,7 +47,6 @@ class plateStallGuesser:
             plate_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'plate*')[0])
         self.plate_NN = models.load_model(plate_NN_path)
         self.plate_NN.summary()
-        self.plate_NN._make_predict_function()
 
         print("Loaded plate NN from: " + plate_NN_path)
 
@@ -98,12 +95,10 @@ class plateStallGuesser:
 
             global sess1
             global graph1
-            # global plate_NN
             with graph1.as_default():
                 set_session(sess1)
                 NN_prediction = self.plate_NN.predict(char_aug)[0]
             
-            # one_hot_prediction = self.plate_NN.predict(char_aug)[0]
             certainty, prediction = self.result_to_char(NN_prediction)
             guess += str(prediction)
             certainty *= certainty
