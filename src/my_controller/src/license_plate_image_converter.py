@@ -13,13 +13,16 @@ from sensor_msgs.msg import Image
 
 from plate_stall_NN_guesser import plateStallGuesser
 
+
+
 class imageConvert:
 
-    def __init__(self):
+    def __init__(self, guess_publisher):
         self.bridge = CvBridge()
         self.image_sub = rp.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
         self.outer_loop()
         self.ps_guesser = plateStallGuesser()
+        self.guess_publisher = guess_publisher
 
     # call this if driving on the inner loop
     def inner_loop(self):
@@ -56,6 +59,13 @@ class imageConvert:
                 fontColor,
                 lineType)
             cv2.imshow("plate_guess", plate)
+
+        if stall is not None:
+            stall_prediction = 1
+            # TODO: implement stall prediction
+
+        # publish
+        self.guess_publisher.sendPlateID(stall_prediction, plate_prediction)
 
 
 
