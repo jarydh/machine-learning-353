@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 
 
-SAVE_FOLDER = "/home/fizzer/machine-learning-353/src/my_controller/src/driving_data/"
+SAVE_FOLDER = "/home/fizzer/ros_ws/src/my_controller/src/driving_data/"
 
 class driverPickler:
     def __init__(self):

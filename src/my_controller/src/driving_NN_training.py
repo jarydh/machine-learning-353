@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+
+
 ####IMPORTS######
 
 import math
@@ -152,6 +155,8 @@ image_data = np.array(group_image)
 #print(image_data)
 image_data = image_data/255
 #print(image_data[4][0])
+
+# print(np.shape(image_data))
 
 ##########################APPEND 3 IMAGES TOGETHER######################
 spot = 0

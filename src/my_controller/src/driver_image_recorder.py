@@ -37,7 +37,7 @@ class driverImageRecorder:
             print(e)
             return
 
-        #calculate the 50 percent of original dimensions
+        #calculate the scale factor of original dimensions
         width = int(cv_image.shape[1] * PICTURE_SCALE_FACTOR)
         height = int(cv_image.shape[0] * PICTURE_SCALE_FACTOR)
 

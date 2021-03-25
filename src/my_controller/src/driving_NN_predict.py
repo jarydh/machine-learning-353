@@ -34,8 +34,11 @@ import fnmatch
 
 
 ############################## LOAD NN  ###########################
-path2 = os.path.dirname(os.path.realpath(__file__)) + "/driving_models/"
-path = os.path.dirname(os.path.realpath(__file__)) + "/"
+DRIVE_NN_PATH = os.path.dirname(os.path.realpath(__file__)) + "/driving_models/"
+
+sess1 = tf.Session()    
+graph1 = tf.get_default_graph()
+set_session(sess1)
 
 
 STOP = [dc.LIN_STOP, dc.ANG_STRAIGHT] 
@@ -70,79 +73,74 @@ NINE = [0,0,0,0,0,0,0,0,1]
 
 class drivePrediction:
 
-	def __init__(self):
-		self.dir = path2
-		self.loadNN()
+    def __init__(self):
+        self.dir = DRIVE_NN_PATH
+        self.loadNN()
 
-	def loadNN(self):
+    def loadNN(self):
+        # # look for NN files
+        for dirpath, dirs, files in os.walk(self.dir):
+            # get the plate and stall NN path
+            drive_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'drive*')[0])
 
-		drive_NN = models.load_model(path2 + "driver_2021-03-23_22:30:26")
-		#drive_NN.summary()
+        self.drive_NN = models.load_model(drive_NN_path)
+        print("Loaded driving NN from: " + drive_NN_path)
 
-	### Appends three images together - also normalizes data ###
-	def appendImages(self, image_triad):
+        # drive_NN.summary()
 
-		image_data = image_triad/255
+    ### Appends three images together - also normalizes data ###
+    def appendImages(self, image_triad):
+        image_triad = np.array(image_triad)
+        image_data = image_triad/255.
 
-		spot = 0
-		dim1 = np.shape(image_data)[0]
-		dim2 = np.shape(image_data)[2]
-		dim3 = np.shape(image_data)[3]*3
-		dim4 = np.shape(image_data)[4]
+        arr1 = np.array(image_data[0])
+        arr2 = np.array(image_data[1])
+        arr3 = np.array(image_data[2])
 
-		image_Data = np.empty((dim2, dim3, dim4))
-		image_Data = np.expand_dims(image_Data, axis =0)
-		image_Data = np.repeat(image_Data, dim1, axis=0)
+        combined_arr = np.hstack((arr1, arr2, arr3))
 
-		for group in image_data:
-			arr1 = np.array(group[0])
-			arr2 = np.array(group[1])
-			arr3 = np.array(group[2])
+        return combined_arr
 
-			combined_arr = np.hstack((arr1, arr2, arr3))
+    def guess_to_driving_command(self, one_hot_prediction):
+        max_position = np.argmax(one_hot_prediction)
 
-			image_Data[spot] = combined_arr
+        if max_position == np.argmax(ONE):
+            drive_command = STOP
+        if max_position == np.argmax(TWO):
+            drive_command = PIVOT_RIGHT
+        if max_position == np.argmax(THREE):
+            drive_command = PIVOT_LEFT
 
-			spot+=1
+        if max_position == np.argmax(FOUR):
+            drive_command = DRIVE_SLOW
+        if max_position == np.argmax(FIVE):
+            drive_command = SLOW_TURN_RIGHT
+        if max_position == np.argmax(SIX):
+            drive_command = SLOW_TURN_LEFT
 
-		return image_Data
+        if max_position == np.argmax(SEVEN):
+            drive_command = DRIVE_FAST
+        if max_position == np.argmax(EIGHT):
+            drive_command = FAST_TURN_RIGHT
+        if max_position == np.argmax(NINE):
+            drive_command = FAST_TURN_LEFT
 
-	def guess_to_driving_command(self, one_hot_prediction):
-		max_position = np.argmax(one_hot_prediction)
-
-		if max_position == np.argmax(ONE):
-			drive_command = STOP
-		if max_position == np.argmax(TWO):
-			one_hot_data[index] = PIVOT_RIGHT
-		if max_position == np.argmax(THREE):
-			one_hot_data[index] = PIVOT_LEFT
-
-		if max_position == np.argmax(FOUR):
-			one_hot_data[index] = DRIVE_SLOW
-		if max_position == np.argmax(FIVE):
-			one_hot_data[index] = SLOW_TURN_RIGHT
-		if max_position == np.argmax(SIX):
-			one_hot_data[index] = SLOW_TURN_LEFT
-
-		if max_position == np.argmax(SEVEN):
-			one_hot_data[index] = DRIVE_FAST
-		if max_position == np.argmax(EIGHT):
-			one_hot_data[index] = FAST_TURN_RIGHT
-		if max_position == np.argmax(NINE):
-			one_hot_data[index] = FAST_TURN_LEFT
-
-		return drive_command
+        return drive_command
 
 
 
-	def get_drive_command(self, camera_feed):
-		three_to_one_image = self.appendImages(camera_feed)
+    def get_drive_command(self, camera_feed):
+        three_to_one_image = self.appendImages(camera_feed)
 
-		guess = []
-		certainty = 0
-
-		#####blah blah some stuff must go here####
-
-		one_hot_prediction = drive_NN.predict(three_to_one_image)
+        img_aug = np.expand_dims(three_to_one_image, axis=0)
 
 
+        global sess1
+        global graph1
+        with graph1.as_default():
+                set_session(sess1)
+                NN_prediction = self.drive_NN.predict(img_aug)
+
+        drive_command = self.guess_to_driving_command(NN_prediction)
+
+        return drive_command
