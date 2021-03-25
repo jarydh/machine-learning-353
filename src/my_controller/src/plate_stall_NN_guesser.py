@@ -72,7 +72,7 @@ class plateStallGuesser:
         return [char1, char2, char3, char4]
 
     # returns tuple of certainty, and prediction
-    def one_hot_to_char(self, one_hot):
+    def result_to_char(self, one_hot):
       max_index = np.argmax(one_hot)
       if max_index < 26:
         char = chr(max_index + 65)
@@ -101,10 +101,12 @@ class plateStallGuesser:
             # global plate_NN
             with graph1.as_default():
                 set_session(sess1)
-                one_hot_prediction = self.plate_NN.predict(char_aug)[0]
+                NN_prediction = self.plate_NN.predict(char_aug)[0]
             
             # one_hot_prediction = self.plate_NN.predict(char_aug)[0]
-            certainty, prediction = self.one_hot_to_char(one_hot_prediction)
-            guess = guess + str(prediction)
+            certainty, prediction = self.result_to_char(NN_prediction)
+            guess += str(prediction)
             certainty *= certainty
-        return (certainty, prediction)
+
+
+        return (certainty, guess)

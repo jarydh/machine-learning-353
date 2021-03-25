@@ -59,13 +59,18 @@ class imageConvert:
                 fontColor,
                 lineType)
             cv2.imshow("plate_guess", plate)
+        else:
+            return
 
         if stall is not None:
             stall_prediction = 1
             # TODO: implement stall prediction
-
+        else:
+            return
+        
         # publish
-        self.guess_publisher.sendPlateID(stall_prediction, plate_prediction)
+        if plate_prediction is not None and stall_prediction is not None:
+            self.guess_publisher.sendPlateID(stall_prediction, plate_prediction)
 
 
 

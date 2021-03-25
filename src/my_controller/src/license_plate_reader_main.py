@@ -9,6 +9,11 @@ from license_plate_image_converter import imageConvert
 
 import license_publisher as lpub
 
+def stop(timer_event):
+    global stop_timer
+    stop_timer.shutdown()
+    guess_publisher.sendStop()
+
 guess_publisher = lpub.licenseTracker()
 
 #imager converter object
@@ -24,11 +29,7 @@ rp.sleep(3.)
 guess_publisher.sendStart()
 
 # send the stop command after 4 minutes
-rp.Timer(rp.Duration(4.*60), guess_publisher.sendStop())
-
-## Just here for testing - working fine. 0 and -1 are registering as not a number for plate locations so I'm assuming that is correct
-#location = -1
-#plate_value = 'A4R8'
+stop_timer = rp.Timer(rp.Duration(4.*60), stop)
 
 rate = rp.Rate(10)
 while not rp.is_shutdown():
