@@ -20,3 +20,11 @@ class licenseTracker:
 
 		self.license_pub.publish(message)
 
+	# send the stop command
+	def sendStart(self):
+		self.sendPlateID(0, "AA00")
+
+	# send the stop command
+	def sendStop(self):
+		self.sendPlateID(-1, "AA00")
+

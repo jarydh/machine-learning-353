@@ -6,23 +6,31 @@
 
 import rospy as rp
 from license_plate_image_converter import imageConvert
+
 import license_publisher as lpub
 
+def stop(timer_event):
+    global stop_timer
+    stop_timer.shutdown()
+    guess_publisher.sendStop()
+
+guess_publisher = lpub.licenseTracker()
+
 #imager converter object
-ic = imageConvert()
+ic = imageConvert(guess_publisher)
 
 #initialize node
 rp.init_node('license_main')
 
-#license plate object
-plate  = lpub.licenseTracker()
+# sleep for 3 seconds to let everything load
+rp.sleep(3.)
 
+# send the start command
+guess_publisher.sendStart()
 
-## Just here for testing - working fine. 0 and -1 are registering as not a number for plate locations so I'm assuming that is correct
-#location = -1
-#plate_value = 'A4R8'
+# send the stop command after 4 minutes
+stop_timer = rp.Timer(rp.Duration(4.*60), stop)
 
 rate = rp.Rate(10)
 while not rp.is_shutdown():
-	#plate.sendPlateID(location, plate_value)
 	rate.sleep()
