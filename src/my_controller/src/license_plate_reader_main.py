@@ -29,7 +29,7 @@ rp.sleep(4.)
 guess_publisher.sendStart()
 
 # send the stop command after 4 minutes
-stop_timer = rp.Timer(rp.Duration(4.*60), stop)
+# stop_timer = rp.Timer(rp.Duration(4.*60), stop)
 
 # FOR TIME TRIALS: send the stop command after 30 seconds
 stop_timer = rp.Timer(rp.Duration(30), stop)
