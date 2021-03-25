@@ -75,6 +75,7 @@ class drivePrediction:
 
     def __init__(self):
         self.dir = DRIVE_NN_PATH
+        self.isLoaded = False
         self.loadNN()
 
     def loadNN(self):
@@ -85,6 +86,7 @@ class drivePrediction:
 
         self.drive_NN = models.load_model(drive_NN_path)
         print("Loaded driving NN from: " + drive_NN_path)
+        self.isLoaded = True
 
         # drive_NN.summary()
 

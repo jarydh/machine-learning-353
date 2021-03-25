@@ -16,7 +16,7 @@ class licenseTracker:
 		location = str(location)
 		plate = str(plate)
 
-		message = str(self.teamID+', '+self.password+', '+location+', '+plate)
+		message = str(self.teamID+','+self.password+','+location+','+plate)
 
 		self.license_pub.publish(message)
 

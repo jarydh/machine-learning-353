@@ -17,11 +17,17 @@ PICTURE_SCALE_FACTOR = 0.2
 
 class imageConverter:
 
-    def __init__(self):
+    def __init__(self, driver_controller):
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
-        self.driver_predictor = drivePrediction()
         self.imgs = []
+        
+        self.driver = driver_controller
+        # start with 0 velocity
+        self.driver.set_linear_speed(0)
+        self.driver.set_angular_speed(0)
+        self.driver_predictor = drivePrediction()
+
+        self.image_sub = rospy.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
 
     # This method gets called whenever there is a new image on the image_raw topic
     def new_image(self, data):
@@ -47,11 +53,30 @@ class imageConverter:
             self.imgs[2] = new_img
 
         # print(np.shape(self.imgs))
+        if self.driver_predictor.isLoaded:
+            lin_speed, ang_speed = self.driver_predictor.get_drive_command(self.imgs)
+        else:
+            return
 
-        lin_speed, ang_speed = self.driver_predictor.get_drive_command(self.imgs)
 
-        #### print image for debugging
-        # cv2.imshow("1", cv_image)
-        # cv2.waitKey(3)
+        # for debugging
+        font                   = cv2.FONT_HERSHEY_SIMPLEX
+        bottomLeftCornerOfText = (10,40)
+        fontScale              = 1.2
+        fontColor              = (0, 0,255)
+        lineType               = 3
+        text = 'Lin Speed: ' + str(lin_speed) + '  Ang Speed: ' + str(ang_speed)
+
+        cv2.putText(cv_image, text, 
+            bottomLeftCornerOfText, 
+            font, 
+            fontScale,
+            fontColor,
+            lineType)
+        cv2.imshow("driving_prediction", cv_image)
+        cv2.waitKey(3)
+
+        self.driver.set_linear_speed(lin_speed)
+        self.driver.set_angular_speed(ang_speed)
 
         

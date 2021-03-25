@@ -59,6 +59,7 @@ class imageConvert:
                 fontColor,
                 lineType)
             cv2.imshow("plate_guess", plate)
+            cv2.waitKey(3)
         else:
             return
 
@@ -81,6 +82,7 @@ class imageConvert:
                 fontColor,
                 lineType)
             cv2.imshow("stall_guess", stall)
+            cv2.waitKey(3)
         else:
             return
         
@@ -93,8 +95,8 @@ class imageConvert:
     # returns the images for the license plate and the parking stall number
     def get_images(self, cv_image):
         # print image for debugging
-        cv2.imshow("raw", cv_image)
-        cv2.waitKey(3)
+        # cv2.imshow("raw", cv_image)
+        # cv2.waitKey(3)
 
         # crop image to bottom left corner since we don't need the full picture
         y_min = 360 # min y coordinate
