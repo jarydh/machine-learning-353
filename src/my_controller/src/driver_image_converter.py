@@ -60,20 +60,27 @@ class imageConverter:
 
 
         # for debugging
+        #calculate the scale factor of original dimensions
+        show_width = int(cv_image.shape[1] * 0.5)
+        show_height = int(cv_image.shape[0] * 0.5)
+
+        # resize image
+        show_img = cv2.resize(cv_image, (show_width, show_height))
+
         font                   = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (10,40)
-        fontScale              = 1.2
+        fontScale              = 1.1
         fontColor              = (0, 0,255)
         lineType               = 3
         text = 'Lin Speed: ' + str(lin_speed) + '  Ang Speed: ' + str(ang_speed)
 
-        cv2.putText(cv_image, text, 
+        cv2.putText(show_img, text, 
             bottomLeftCornerOfText, 
             font, 
             fontScale,
             fontColor,
             lineType)
-        cv2.imshow("driving_prediction", cv_image)
+        cv2.imshow("driving_prediction", show_img)
         cv2.waitKey(3)
 
         self.driver.set_linear_speed(lin_speed)

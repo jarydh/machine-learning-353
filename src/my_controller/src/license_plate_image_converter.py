@@ -50,7 +50,7 @@ class imageConvert:
             fontScale              = 1.2
             fontColor              = (0, 0,255)
             lineType               = 3
-            text = 'Guess: ' + str(plate_prediction) + '  Certainty: ' + str(plate_certainty)
+            text = 'Guess: ' + str(plate_prediction)
 
             cv2.putText(plate, text, 
                 bottomLeftCornerOfText, 
