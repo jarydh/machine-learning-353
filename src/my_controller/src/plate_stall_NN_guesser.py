@@ -31,6 +31,10 @@ CHAR4_LEFT = 445
 PLATE_HEIGHT = 298
 PLATE_WIDTH = 600
 
+# stall dimensions
+STALL_HEIGHT = 80
+STALL_WIDTH = 65
+
 sess1 = tf.Session()    
 graph1 = tf.get_default_graph()
 set_session(sess1)
@@ -43,12 +47,15 @@ class plateStallGuesser:
     def loadNN(self):
         # # look for NN files
         for dirpath, dirs, files in os.walk(self.dir):
-            # get the plate NN path
+            # get the plate and stall NN path
             plate_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'plate*')[0])
+            stall_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'stall*')[0])
+
         self.plate_NN = models.load_model(plate_NN_path)
-        self.plate_NN.summary()
+        self.stall_NN = models.load_model(stall_NN_path)
 
         print("Loaded plate NN from: " + plate_NN_path)
+        print("Loaded stall NN from: " + stall_NN_path)
 
 
     # returns a list with the 4 characters in the image
@@ -104,4 +111,24 @@ class plateStallGuesser:
             certainty *= certainty
 
 
+        return (certainty, guess)
+
+
+    def guess_stall(self, stall_img):
+        stall_img = cv2.resize(stall_img, (STALL_WIDTH, STALL_HEIGHT))
+        guess = ""
+        certainty = 1
+        stall_aug = np.expand_dims(stall_img, axis=0)
+
+        global sess1
+        global graph1
+        with graph1.as_default():
+            set_session(sess1)
+            NN_prediction = self.stall_NN.predict(stall_aug)[0]
+
+        guess = np.argmax(NN_prediction)
+        certainty = NN_prediction[guess]
+
+        # since index 0 corresponds to stall 1
+        guess += 1
         return (certainty, guess)

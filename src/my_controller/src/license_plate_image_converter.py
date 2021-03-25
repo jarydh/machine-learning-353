@@ -63,8 +63,24 @@ class imageConvert:
             return
 
         if stall is not None:
-            stall_prediction = 1
-            # TODO: implement stall prediction
+            stall_certainty, stall_prediction = self.ps_guesser.guess_stall(stall)
+
+            # for debugging
+            stall = cv2.resize(stall, (260, 320))
+            font                   = cv2.FONT_HERSHEY_SIMPLEX
+            bottomLeftCornerOfText = (10,40)
+            fontScale              = 1.2
+            fontColor              = (0, 0,255)
+            lineType               = 3
+            text = 'Guess: ' + str(stall_prediction)
+
+            cv2.putText(stall, text, 
+                bottomLeftCornerOfText, 
+                font, 
+                fontScale,
+                fontColor,
+                lineType)
+            cv2.imshow("stall_guess", stall)
         else:
             return
         
@@ -159,6 +175,10 @@ class imageConvert:
 
         # transform stall
         stall_transform = self.perpective_transform(stall_pts, cropped_mask)
+
+        # resize the image for consistency, then crop around the number
+        stall_transform = cv2.resize(stall_transform, (160, 95))
+        stall_transform = stall_transform[15:95,95:,:]
 
         # cv2.imshow("plate", plate_transform)
         # cv2.imshow("stall", stall_transform)
