@@ -24,7 +24,7 @@ class imageConverter:
 		except CvBridgeError as e:
 			print(e)
 
-		# # print image for debugging
+		#### print image for debugging
 		# cv2.imshow("1", cv_image)
 		# cv2.waitKey(3)
 

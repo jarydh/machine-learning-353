@@ -8,6 +8,13 @@ import cv2
 from datetime import datetime
 from random import randint
 
+import tensorflow as tf
+
+from tensorflow.keras import models
+
+from tensorflow.python.keras.backend import set_session
+from tensorflow.python.keras.models import load_model
+
 from tensorflow.keras import layers
 from tensorflow.keras import models
 from tensorflow.keras import optimizers
@@ -19,153 +26,123 @@ from matplotlib import pyplot as plt
 from driver_pickler import driverPickler 
 import driver_controller as dc
 
+import numpy as np
+
+import cv2
+import os
+import fnmatch
 
 
 ############################## LOAD NN  ###########################
 path2 = os.path.dirname(os.path.realpath(__file__)) + "/driving_models/"
-
-drive_NN = models.load_model(path2 + "driver_2021-03-23_22:30:26")
-drive_NN.summary()
-
-
 path = os.path.dirname(os.path.realpath(__file__)) + "/"
 
-images = []
 
-pickle = driverPickler()
+STOP = [dc.LIN_STOP, dc.ANG_STRAIGHT] 
+ONE = [1,0,0,0,0,0,0,0,0]
 
-for dirpath, dirs, files in os.walk(path + "driving_data/"):  
-	for filename in fnmatch.filter(files, '*_imgs.pickle'): 
-		timestamp = filename[0:19]
-		in_pickle = pickle.load_pickle(timestamp)
+PIVOT_RIGHT = [dc.LIN_STOP, dc.ANG_RIGHT]
+TWO = [0,1,0,0,0,0,0,0,0]
 
-		images.append(in_pickle[0])
+PIVOT_LEFT = [dc.LIN_STOP, dc.ANG_LEFT]
+THREE = [0,0,1,0,0,0,0,0,0]
 
-group_image = []
+DRIVE_SLOW = [dc.LIN_SLOW, dc.ANG_STRAIGHT]
+FOUR = [0,0,0,1,0,0,0,0,0]
 
-count = 0
+SLOW_TURN_RIGHT = [dc.LIN_SLOW, dc.ANG_RIGHT]
+FIVE = [0,0,0,0,1,0,0,0,0]
 
-for i in range(0,len(images)):
-	for j in range(2,len(images[i])):
+SLOW_TURN_LEFT = [dc.LIN_SLOW, dc.ANG_LEFT]
+SIX = [0,0,0,0,0,1,0,0,0]
 
-		image_set = []
+DRIVE_FAST = [dc.LIN_FAST, dc.ANG_STRAIGHT]
+SEVEN = [0,0,0,0,0,0,1,0,0]
 
-		image_set.append(images[i][j-2])
-		image_set.append(images[i][j-1])
-		image_set.append(images[i][j])
+FAST_TURN_RIGHT = [dc.LIN_FAST, dc.ANG_RIGHT]
+EIGHT = [0,0,0,0,0,0,0,1,0]
 
-		for k in range(3):
-			img = image_set[k]
-			img = img.astype(float)
-			img_arr = np.asarray(img)
-			image_set[k] = img_arr
-
-		group_image.append(image_set)
-
-		count+=1 
-
-image_data = np.array(group_image)
-image_data = image_data/255
-
-spot = 0
-dim1 = np.shape(image_data)[0]
-dim2 = np.shape(image_data)[2]
-dim3 = np.shape(image_data)[3]*3
-dim4 = np.shape(image_data)[4]
-
-image_Data = np.empty((dim2, dim3, dim4))
-image_Data = np.expand_dims(image_Data, axis =0)
-image_Data = np.repeat(image_Data, dim1, axis=0)
-
-for group in image_data:
-	arr1 = np.array(group[0])
-	arr2 = np.array(group[1])
-	arr3 = np.array(group[2])
-
-	combined_arr = np.hstack((arr1, arr2, arr3))
-
-	image_Data[spot] = combined_arr
-
-	spot+=1
-
-test_image = []
-num = randint(0, 500)
-test_image.append(image_Data[num])
-num = randint(0, 500)
-test_image.append(image_Data[num])
-num = randint(0, 500)
-test_image.append(image_Data[num])
-num = randint(0, 500)
-test_image.append(image_Data[num])
-num = randint(0, 500)
-test_image.append(image_Data[num])
-
-test_image = np.array(test_image)
+FAST_TURN_LEFT = [dc.LIN_FAST, dc.ANG_LEFT]
+NINE = [0,0,0,0,0,0,0,0,1]
 
 
 
-# print(test_image)
-# print(np.shape(test_image))
 
-# cv2.imshow("1", test_image)
-# cv2.waitKey(0)
+class drivePrediction:
+
+	def __init__(self):
+		self.dir = path2
+		self.loadNN()
+
+	def loadNN(self):
+
+		drive_NN = models.load_model(path2 + "driver_2021-03-23_22:30:26")
+		#drive_NN.summary()
+
+	### Appends three images together - also normalizes data ###
+	def appendImages(self, image_triad):
+
+		image_data = image_triad/255
+
+		spot = 0
+		dim1 = np.shape(image_data)[0]
+		dim2 = np.shape(image_data)[2]
+		dim3 = np.shape(image_data)[3]*3
+		dim4 = np.shape(image_data)[4]
+
+		image_Data = np.empty((dim2, dim3, dim4))
+		image_Data = np.expand_dims(image_Data, axis =0)
+		image_Data = np.repeat(image_Data, dim1, axis=0)
+
+		for group in image_data:
+			arr1 = np.array(group[0])
+			arr2 = np.array(group[1])
+			arr3 = np.array(group[2])
+
+			combined_arr = np.hstack((arr1, arr2, arr3))
+
+			image_Data[spot] = combined_arr
+
+			spot+=1
+
+		return image_Data
+
+	def guess_to_driving_command(self, one_hot_prediction):
+		max_position = np.argmax(one_hot_prediction)
+
+		if max_position == np.argmax(ONE):
+			drive_command = STOP
+		if max_position == np.argmax(TWO):
+			one_hot_data[index] = PIVOT_RIGHT
+		if max_position == np.argmax(THREE):
+			one_hot_data[index] = PIVOT_LEFT
+
+		if max_position == np.argmax(FOUR):
+			one_hot_data[index] = DRIVE_SLOW
+		if max_position == np.argmax(FIVE):
+			one_hot_data[index] = SLOW_TURN_RIGHT
+		if max_position == np.argmax(SIX):
+			one_hot_data[index] = SLOW_TURN_LEFT
+
+		if max_position == np.argmax(SEVEN):
+			one_hot_data[index] = DRIVE_FAST
+		if max_position == np.argmax(EIGHT):
+			one_hot_data[index] = FAST_TURN_RIGHT
+		if max_position == np.argmax(NINE):
+			one_hot_data[index] = FAST_TURN_LEFT
+
+		return drive_command
 
 
-one_hot_prediction = drive_NN.predict(test_image)
 
-print(one_hot_prediction)
+	def get_drive_command(self, camera_feed):
+		three_to_one_image = self.appendImages(camera_feed)
 
+		guess = []
+		certainty = 0
 
-#     # returns a list with the 4 characters in the image
-#     def break_to_chars(self, img):
-#         char1 = img[LETTER_TOP:LETTER_BOTTOM, CHAR1_LEFT:CHAR1_LEFT + CHAR_WIDTH, :]
-#         char2 = img[LETTER_TOP:LETTER_BOTTOM, CHAR2_LEFT:CHAR2_LEFT + CHAR_WIDTH, :]
-#         char3 = img[LETTER_TOP:LETTER_BOTTOM, CHAR3_LEFT:CHAR3_LEFT + CHAR_WIDTH, :]
-#         char4 = img[LETTER_TOP:LETTER_BOTTOM, CHAR4_LEFT:CHAR4_LEFT + CHAR_WIDTH, :]
-        
-#         # show first char for debugging
-#         # raw_input()
-#         # cv2.imshow("2", char2)
-#         # cv2.imshow("3", char3)
-#         # cv2.imshow("4", char4)
-#         # cv2.waitKey(3)
-#         # raw_input()
+		#####blah blah some stuff must go here####
 
-#         return [char1, char2, char3, char4]
-
-#     # returns tuple of certainty, and prediction
-#     def one_hot_to_char(one_hot):
-#       max_index = np.argmax(one_hot)
-#       if max_index < 26:
-#         char = chr(max_index + 65)
-#       else:
-#         char = chr(max_index + 22)
-
-#       return (one_hot[max_index], char)
+		one_hot_prediction = drive_NN.predict(three_to_one_image)
 
 
-#     def guess_plate(self, plate_img):
-#         plate_img = cv2.resize(plate_img, (PLATE_WIDTH, PLATE_HEIGHT))
-#         chars = self.break_to_chars(plate_img)
-
-#         # # check inputs
-#         # cv2.imshow("char1", chars[0])
-#         # cv2.imshow("char2", chars[1])
-#         # cv2.imshow("char3", chars[2])
-#         # cv2.imshow("char4", chars[3])
-#         guess = ""
-#         certainty = 1
-#         for next_char in chars:
-#             char_aug = np.expand_dims(next_char, axis=0)
-
-#             # # failed bug fix
-#             # global graph
-#             # with graph.as_default():
-#             #     one_hot_prediction = self.plate_NN.predict(char_aug)[0]
-            
-#             one_hot_prediction = self.plate_NN.predict(char_aug)[0]
-#             certainty, prediction = self.one_hot_to_char(one_hot_prediction)
-#             guess = guess + str(prediction)
-#             certainty *= certainty
-
-#         return (certainty, prediction)
