@@ -9,9 +9,6 @@ import cv2
 
 from datetime import datetime
 
-from collections import Counter
-from PIL import Image
-
 from tensorflow.keras import layers
 from tensorflow.keras import models
 from tensorflow.keras import optimizers
@@ -241,7 +238,7 @@ conv_model.add(layers.Dense(9, activation='softmax'))
 
 ################SETTING UP FOR TRAINING###############
 
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 5e-4
 conv_model.compile(loss='categorical_crossentropy', optimizer=optimizers.RMSprop(lr=LEARNING_RATE),metrics=['acc'])
 
 
@@ -251,6 +248,6 @@ history_conv = conv_model.fit(X_dataset, Y_dataset, validation_split=VALIDATION_
 
 
 save_dirpath =  path + "driving_models/driver_" +  datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-conv_model.save_model(save_dirpath)
+models.save_model(conv_model, save_dirpath)
 print("Saved to: " + save_dirpath)
 
