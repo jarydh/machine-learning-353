@@ -44,7 +44,7 @@ class imageConvert:
             plate_certainty, plate_prediction = self.ps_guesser.guess_plate(plate)
 
             # for debugging
-            plate = cv2.resize(plate, (298, 600))
+            plate = cv2.resize(plate, (600, 298))
             font                   = cv2.FONT_HERSHEY_SIMPLEX
             bottomLeftCornerOfText = (10,40)
             fontScale              = 1.2

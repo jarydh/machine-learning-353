@@ -1,22 +1,20 @@
 # used for guessing text using the NN
 
-# #Failed bug fix
-# import tensorflow as tf
-# graph = tf.get_default_graph()
 from tensorflow.keras import models
 
-# from tensorflow.python.keras import layers
-# from tensorflow.python.keras import models
-# from tensorflow.python.keras import optimizers
+from tensorflow.python.keras.backend import set_session
+from tensorflow.python.keras.models import load_model
 
-# from tensorflow.python.keras.utils import plot_model
-# from tensorflow.python.keras import backend
+from tensorflow.python.keras.utils import plot_model
+from tensorflow.python.keras import backend
 
 import numpy as np
 
 import cv2
 import os
 import fnmatch
+
+import tensorflow as tf
 
 NN_DIR = os.path.dirname(os.path.realpath(__file__)) + "/plate_stall_NN/"
 
@@ -35,6 +33,9 @@ CHAR4_LEFT = 445
 PLATE_HEIGHT = 298
 PLATE_WIDTH = 600
 
+sess1 = tf.Session()    
+graph1 = tf.get_default_graph()
+set_session(sess1)
 
 class plateStallGuesser:
     def __init__(self):
@@ -42,13 +43,13 @@ class plateStallGuesser:
         self.loadNN()
 
     def loadNN(self):
-        # look for NN files
+        # # look for NN files
         for dirpath, dirs, files in os.walk(self.dir):
             # get the plate NN path
             plate_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'plate*')[0])
-
         self.plate_NN = models.load_model(plate_NN_path)
         self.plate_NN.summary()
+        self.plate_NN._make_predict_function()
 
         print("Loaded plate NN from: " + plate_NN_path)
 
@@ -71,7 +72,7 @@ class plateStallGuesser:
         return [char1, char2, char3, char4]
 
     # returns tuple of certainty, and prediction
-    def one_hot_to_char(one_hot):
+    def one_hot_to_char(self, one_hot):
       max_index = np.argmax(one_hot)
       if max_index < 26:
         char = chr(max_index + 65)
@@ -95,14 +96,15 @@ class plateStallGuesser:
         for next_char in chars:
             char_aug = np.expand_dims(next_char, axis=0)
 
-            # # failed bug fix
-            # global graph
-            with graph.as_default():
+            global sess1
+            global graph1
+            # global plate_NN
+            with graph1.as_default():
+                set_session(sess1)
                 one_hot_prediction = self.plate_NN.predict(char_aug)[0]
             
-            one_hot_prediction = self.plate_NN.predict(char_aug)[0]
+            # one_hot_prediction = self.plate_NN.predict(char_aug)[0]
             certainty, prediction = self.one_hot_to_char(one_hot_prediction)
             guess = guess + str(prediction)
             certainty *= certainty
-
         return (certainty, prediction)
