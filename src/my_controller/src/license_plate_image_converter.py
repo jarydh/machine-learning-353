@@ -14,6 +14,8 @@ from sensor_msgs.msg import Image
 from plate_stall_NN_guesser import plateStallGuesser
 
 
+# number of pixels that meet HSV threshold for it to consider a plate
+PLATE_GREY_TRHESHOLD = 200
 
 class imageConvert:
 
@@ -145,15 +147,27 @@ class imageConvert:
             # No license plate found
             return(None, None)
 
-        # TODO: not working, sometimes plate can have width > 160
-        # # plate section does not meet relative shape threshold
-        # plate_width_min = 30
-        # plate_width_max = 150
+        # check to make sure we actually have a plate by filtering for the grey colour
+        # thresholds for grey
+        uh = 121
+        us = 32
+        uv = 193
+        lh = 95
+        ls = 0
+        lv = 89
 
-        # print(np.shape(plate_transform))
+        lower_hsv = np.array([lh,ls,lv])
+        upper_hsv = np.array([uh,us,uv])
 
-        # # if np.shape(plate_transform)[1] < plate_width_min or np.shape(plate_transform)[1] > plate_width_max:
-        # #     return (None, None)
+        # convert to hsv
+        plate_transform_hsv = cv2.cvtColor(plate_transform, cv2.COLOR_BGR2HSV)
+        # Threshold the HSV image to get only grey colors
+        plate_transform_hsv = cv2.inRange(plate_transform_hsv, lower_hsv, upper_hsv)
+        plate_grey_sum = np.sum(plate_transform_hsv) / 255
+        print(plate_grey_sum)
+
+        if plate_grey_sum < PLATE_GREY_TRHESHOLD:
+            return (None, None)
 
         tl = plate_pts[0]
         tr = plate_pts[1]
