@@ -18,14 +18,14 @@ PICTURE_SCALE_FACTOR = 0.2
 CROSSWALK_INTENSITY_THRESHOLD = 8
 # higher number means closer to the robot. this is number of pixels, for scale factor 0.2 this needs to be between 0 and 72
 # this will all depend on the stopping distance of the robot
-CROSSWALK_DISTANCE_THRESHOLD = 30
+CROSSWALK_DISTANCE_THRESHOLD = 20
 
 MOTION_DIFF_TRHESHOLD = 50
 
 # how many pixels (vertically) needed
 MOTION_PIXEL_THRESHOLD = 2
 
-FRAMES_TO_DRIVE_THROUGH_CROSSWALK = 25
+CROSSWALK_DETECTION_COOLDOWN = 3 # seconds
 SPEED_THROUGH_CROSSWALK = 0.2
 
 class imageConverter:
@@ -44,7 +44,11 @@ class imageConverter:
         self.motion_detected = True
         self.current_img = None
         self.previous_img = None
-        self.driving_through_crosswalk_count = 0
+        self.croswalk_detection_enabled = True
+
+    def reset_crosswalk_detection(self, timer_event):
+        self.croswalk_detection_enabled = True
+        self.crosswalk_cooldown_timer.shutdown()
 
     # This method gets called whenever there is a new image on the image_raw topic
     def new_image(self, data):
@@ -64,45 +68,25 @@ class imageConverter:
         self.previous_img = self.current_img
         self.current_img = new_img
 
-        # currently driving through crosswalk, drive straight for a set number of frames
-        if self.driving_through_crosswalk_count > 0:
-            lin_speed = SPEED_THROUGH_CROSSWALK
-            ang_speed = 0
-            status = "Driving through crosswalk"
-            if self.driving_through_crosswalk_count >= FRAMES_TO_DRIVE_THROUGH_CROSSWALK:
-                self.driving_through_crosswalk_count = 0
-            else:
-                self.driving_through_crosswalk_count += 1
-        # already detected crosswalk
-        elif self.is_at_crosswalk == True:
-            # motion detected
-            if self.motion_detected:
-                status = "Waiting for motion to stop"
-                self.motion_detected = self.check_for_motion(self.current_img, self.previous_img)
-                lin_speed = 0
-                ang_speed = 0
-            else:
-                lin_speed = SPEED_THROUGH_CROSSWALK
-                ang_speed = 0
-                status = "Driving through crosswalk"
-                self.driving_through_crosswalk_count = 1
-                if not self.check_for_crosswalk(new_img):
-                    # if we can't see the crosswalk, then assume we've gone past it
-                    self.is_at_crosswalk = False
-                    # reset for next time
-                    self.motion_detected = True
-                    self.driving_through_crosswalk_count = 0
+        # check conditions
+        # TODO: Check if should move to inner loop
+        # check if at a crosswalk
+        if self.croswalk_detection_enabled:
+            self.is_at_crosswalk = self.check_for_crosswalk(new_img)
 
-        # check if we just found the crosswalk
-        elif self.check_for_crosswalk(new_img):
-            status = "Crosswalk detected"
-            self.is_at_crosswalk = True
-            # stop the car
+        if self.is_at_crosswalk:
+            self.croswalk_detection_enabled = False
+            self.motion_detected = self.check_for_motion(self.current_img, self.previous_img)
+            status = "Waiting for motion to stop"
             lin_speed = 0
             ang_speed = 0
-        # normal driving conditions
+            # can resume normal driving
+            if not self.motion_detected:
+                self.is_at_crosswalk = False
+                self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection)
+
         else:
-            status = "Normal Driving"
+            status = "Driving Outer Loop"
 
             self.imgs = new_img
 

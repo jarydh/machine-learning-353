@@ -15,7 +15,7 @@ from plate_stall_NN_guesser import plateStallGuesser
 
 
 # number of pixels that meet HSV threshold for it to consider a plate
-PLATE_GREY_TRHESHOLD = 200
+PLATE_GREY_TRHESHOLD = 500
 
 class imageConvert:
 
@@ -164,7 +164,6 @@ class imageConvert:
         # Threshold the HSV image to get only grey colors
         plate_transform_hsv = cv2.inRange(plate_transform_hsv, lower_hsv, upper_hsv)
         plate_grey_sum = np.sum(plate_transform_hsv) / 255
-        print(plate_grey_sum)
 
         if plate_grey_sum < PLATE_GREY_TRHESHOLD:
             return (None, None)

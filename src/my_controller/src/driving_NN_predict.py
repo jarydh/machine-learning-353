@@ -70,7 +70,6 @@ NINE = [0,0,0,0,0,0,0,0,1]
 
 
 
-
 class drivePrediction:
 
     def __init__(self):
@@ -82,7 +81,7 @@ class drivePrediction:
         # # look for NN files
         for dirpath, dirs, files in os.walk(self.dir):
             # get the plate and stall NN path
-            drive_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'driver_2021-04-03_*')[0])
+            drive_NN_path = os.path.join(dirpath, fnmatch.filter(files, '*outer_driver*')[0])
 
         self.drive_NN = models.load_model(drive_NN_path)
         print("Loaded driving NN from: " + drive_NN_path)
