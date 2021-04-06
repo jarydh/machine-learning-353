@@ -2,15 +2,17 @@
 
 import rospy as rp
 from std_msgs.msg import String
+from std_msgs.msg import Int16
 import numpy as np
 
 PLATE_TIMEOUT = 1
-PLATE_MINIMUM = 4
+PLATE_MINIMUM = 3
 
 class licenseTracker: 
 
 	def __init__(self): 
 		self.license_pub = rp.Publisher('/license_plate', String, queue_size = 1)
+		self.stall_guess_pub = rp.Publisher('/stall_guess', Int16, queue_size = 1)
 		self.teamID = 'teamid'
 		self.password = 'password'
 		self.current_plate_predictions = []
@@ -63,7 +65,10 @@ class licenseTracker:
 
 			message = str(self.teamID+','+self.password+','+location+','+plate)
 
-			self.license_pub.publish(message)			
+			self.license_pub.publish(message)		
+
+			# publish stall number
+			self.stall_guess_pub.publish(int(location))
 		
 		self.current_plate_predictions = []
 		self.num_predictions = 0
@@ -72,8 +77,12 @@ class licenseTracker:
 	# send the stop command
 	def sendStart(self):
 		self.sendPlateID(0, "AA00")
+		# let the driver side know to start
+		self.stall_guess_pub.publish(100)
 
 	# send the stop command
 	def sendStop(self):
 		self.sendPlateID(-1, "AA00")
+		# let the driver side know to stop
+		self.stall_guess_pub.publish(200)
 

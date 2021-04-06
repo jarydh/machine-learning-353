@@ -22,9 +22,6 @@ driver = dc.driverController(sim_time)
 # create object to convert images from ROS message to cv2
 ic = imageConverter(driver)
 
-# sleep for 5 seconds to let everything load
-rospy.sleep(5.)
-
 # do nothing and loop to keep node active
 rate = rospy.Rate(10)
 while not rospy.is_shutdown():

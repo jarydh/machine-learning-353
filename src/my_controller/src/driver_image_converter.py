@@ -7,10 +7,11 @@ import cv2
 import numpy as np
 
 from sensor_msgs.msg import Image
+from std_msgs.msg import Int16
 
 import cv_image_tools
 from driving_NN_predict import drivePrediction
-
+import manual_driver as md
 
 PICTURE_SCALE_FACTOR = 0.2
 
@@ -32,19 +33,51 @@ class imageConverter:
 
     def __init__(self, driver_controller):
         self.bridge = CvBridge()
+
+        # driver NN
+        self.outer_driver_NN = drivePrediction("outer")
+        self.inner_driver_NN = drivePrediction("inner")
+        # start with the outer loop
+        self.driver_predictor = self.outer_driver_NN
+
+        # image feed
+        self.image_sub = rospy.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
         self.imgs = []
-        
+        self.current_img = None
+        self.previous_img = None
+
+        # driver controller
         self.driver = driver_controller
         # start with 0 velocity
         self.driver.set_linear_speed(0)
         self.driver.set_angular_speed(0)
-        self.driver_predictor = drivePrediction()
-        self.image_sub = rospy.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
-        self.is_at_crosswalk = False
+
+        # manual driver
+        self.manual_driver = md.manualDriver()
+
+        # driver status variables
+        self.is_active = False
+        self.do_left_turn = True
+        self.is_waiting_for_motion = False
         self.motion_detected = True
-        self.current_img = None
-        self.previous_img = None
         self.croswalk_detection_enabled = True
+        self.is_on_outer = True
+        self.is_transitioning_loops = False
+
+        # plate tracking variables
+        self.stall_guess_sub = rospy.Subscriber("/stall_guess", Int16, self.new_plate_guess)
+        self.stall_guesses = set()
+
+    # whenever a new plate guess is made
+    def new_plate_guess(self, data):
+        # special number for starting
+        if int(data.data) == 100:
+            self.is_active = True
+        # special value for stopping
+        elif int(data.data) == 200:
+            self.is_active = False
+        else:
+            self.stall_guesses.add(data.data)
 
     def reset_crosswalk_detection(self, timer_event):
         self.croswalk_detection_enabled = True
@@ -67,13 +100,26 @@ class imageConverter:
         self.previous_img = self.current_img
         self.current_img = new_img
 
-        # check conditions
-        # TODO: Check if should move to inner loop
+        # check if should move to inner loop
+        if len(self.stall_guesses) >= 6 and self.is_on_outer:
+            self.croswalk_detection_enabled = False
+            self.is_transitioning_loops = True
         # check if at a crosswalk
-        if self.croswalk_detection_enabled:
-            self.is_at_crosswalk = self.check_for_crosswalk(new_img)
+        elif self.croswalk_detection_enabled:
+            self.is_waiting_for_motion = self.check_for_crosswalk(new_img)
 
-        if self.is_at_crosswalk:
+
+        # get the driving commands
+        if not self.is_active:
+            status = "Waiting to start"
+            lin_speed = 0
+            ang_speed = 0
+        elif self.do_left_turn:
+            status = "Manual left turn"
+            lin_speed, ang_speed, is_done = self.manual_driver.left_turn()
+            if is_done:
+                self.do_left_turn = False
+        elif self.is_waiting_for_motion:
             self.croswalk_detection_enabled = False
             self.motion_detected = self.check_for_motion(self.current_img, self.previous_img)
             status = "Waiting for motion to stop"
@@ -81,11 +127,24 @@ class imageConverter:
             ang_speed = 0
             # can resume normal driving
             if not self.motion_detected:
-                self.is_at_crosswalk = False
-                self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection, oneshot=True)
-
+                self.is_waiting_for_motion = False
+                if self.is_on_outer:
+                    self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection, oneshot=True)
+        elif self.is_transitioning_loops:
+            status = "Transitioning between loops"
+            # drive between loops 
+            lin_speed, ang_speed, is_done = self.manual_driver.loop_transition()
+            if is_done:
+                self.is_transitioning_loops = False
+                self.is_on_outer = False
+                self.driver_predictor = self.inner_driver_NN
+                self.is_waiting_for_motion = True
+                self.do_left_turn = True
         else:
-            status = "Driving Outer Loop"
+            if self.is_on_outer:
+                status = "Driving Outer Loop"
+            else:
+                status = "Driving Inner Loop"
 
             self.imgs = new_img
 
