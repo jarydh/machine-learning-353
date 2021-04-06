@@ -11,6 +11,8 @@ import cv_image_tools
 
 from sensor_msgs.msg import Image
 
+from std_msgs.msg import String
+
 from plate_stall_NN_guesser import plateStallGuesser
 
 
@@ -22,9 +24,15 @@ class imageConvert:
     def __init__(self, guess_publisher):
         self.bridge = CvBridge()
         self.image_sub = rp.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
+        self.drive_status_sub = rp.Subscriber("/driver_status", String, self.new_status)
         self.outer_loop()
         self.ps_guesser = plateStallGuesser()
         self.guess_publisher = guess_publisher
+
+    # new status update
+    def new_status(self, data):
+        # for now, assume any message means we switch to the inner loop
+        self.inner_loop()
 
     # call this if driving on the inner loop
     def inner_loop(self):

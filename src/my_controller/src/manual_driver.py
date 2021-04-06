@@ -9,7 +9,7 @@ import driver_controller as dc
 LOOP_TRANSITION_FRAMES = [2, 18, 1, 3]
 
 # must be same length
-LOOP_TRANSITION_SPEEDS = [(dc.LIN_SLOW, dc.ANG_STRAIGHT),
+LOOP_TRANSITION_SPEEDS = [(dc.LIN_STOP, dc.ANG_STRAIGHT),
                           (dc.LIN_SLOW, dc.ANG_LEFT),
                           (dc.LIN_SLOW, dc.ANG_STRAIGHT),
                           (dc.LIN_STOP, dc.ANG_STRAIGHT)]

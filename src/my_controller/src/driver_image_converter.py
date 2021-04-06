@@ -8,6 +8,8 @@ import numpy as np
 
 from sensor_msgs.msg import Image
 from std_msgs.msg import Int16
+from std_msgs.msg import String
+
 
 import cv_image_tools
 from driving_NN_predict import drivePrediction
@@ -54,6 +56,9 @@ class imageConverter:
 
         # manual driver
         self.manual_driver = md.manualDriver()
+
+        # to communicate with the plate NN
+        self.drive_status_pub = rospy.Publisher("/driver_status", String, queue_size = 1)
 
         # driver status variables
         self.is_active = False
@@ -140,6 +145,7 @@ class imageConverter:
                 self.driver_predictor = self.inner_driver_NN
                 self.is_waiting_for_motion = True
                 self.do_left_turn = True
+                self.drive_status_pub.publish("Inner")
         else:
             if self.is_on_outer:
                 status = "Driving Outer Loop"
