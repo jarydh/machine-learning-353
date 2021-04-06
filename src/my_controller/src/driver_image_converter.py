@@ -133,8 +133,12 @@ class imageConverter:
             # can resume normal driving
             if not self.motion_detected:
                 self.is_waiting_for_motion = False
+                # if on the outer loop, means we stopped for a crosswalk
                 if self.is_on_outer:
                     self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection, oneshot=True)
+                # if not, then it means we stopped for the truck
+                else:
+                    self.do_left_turn = True
         elif self.is_transitioning_loops:
             status = "Transitioning between loops"
             # drive between loops 
@@ -144,7 +148,6 @@ class imageConverter:
                 self.is_on_outer = False
                 self.driver_predictor = self.inner_driver_NN
                 self.is_waiting_for_motion = True
-                self.do_left_turn = True
                 self.drive_status_pub.publish("Inner")
         else:
             if self.is_on_outer:
