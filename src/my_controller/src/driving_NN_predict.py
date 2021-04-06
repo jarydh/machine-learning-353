@@ -82,7 +82,7 @@ class drivePrediction:
         # # look for NN files
         for dirpath, dirs, files in os.walk(self.dir):
             # get the plate and stall NN path
-            drive_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'drive*')[0])
+            drive_NN_path = os.path.join(dirpath, fnmatch.filter(files, 'driver_2021-04-03_*')[0])
 
         self.drive_NN = models.load_model(drive_NN_path)
         print("Loaded driving NN from: " + drive_NN_path)
@@ -91,6 +91,7 @@ class drivePrediction:
         # drive_NN.summary()
 
     ### Appends three images together - also normalizes data ###
+    ##### Not used anymroe due to new NN ####
     def appendImages(self, image_triad):
         image_triad = np.array(image_triad)
         image_data = image_triad/255.
@@ -132,9 +133,13 @@ class drivePrediction:
 
 
     def get_drive_command(self, camera_feed):
-        three_to_one_image = self.appendImages(camera_feed)
+        #three_to_one_image = self.appendImages(camera_feed)
 
-        img_aug = np.expand_dims(three_to_one_image, axis=0)
+        image = camera_feed
+        image = np.array(image)
+        image = image.astype(np.float32)
+        norm_image = image/255
+        img_aug = np.expand_dims(norm_image, axis=0)
 
 
         global sess1
