@@ -48,8 +48,7 @@ class imageConverter:
 
     def reset_crosswalk_detection(self, timer_event):
         self.croswalk_detection_enabled = True
-        self.crosswalk_cooldown_timer.shutdown()
-
+        
     # This method gets called whenever there is a new image on the image_raw topic
     def new_image(self, data):
         try:
@@ -83,7 +82,7 @@ class imageConverter:
             # can resume normal driving
             if not self.motion_detected:
                 self.is_at_crosswalk = False
-                self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection)
+                self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection, oneshot=True)
 
         else:
             status = "Driving Outer Loop"

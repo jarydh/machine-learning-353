@@ -10,8 +10,6 @@ from license_plate_image_converter import imageConvert
 import license_publisher as lpub
 
 def stop(timer_event):
-    global stop_timer
-    stop_timer.shutdown()
     guess_publisher.sendStop()
 
 guess_publisher = lpub.licenseTracker()
@@ -29,7 +27,7 @@ rp.sleep(4.)
 guess_publisher.sendStart()
 
 # send the stop command after 4 minutes
-stop_timer = rp.Timer(rp.Duration(4.*60), stop)
+stop_timer = rp.Timer(rp.Duration(4.*60), stop, oneshot=True)
 
 # FOR TIME TRIALS: send the stop command after 30 seconds
 # stop_timer = rp.Timer(rp.Duration(30), stop)

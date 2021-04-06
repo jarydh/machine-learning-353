@@ -15,7 +15,7 @@ from plate_stall_NN_guesser import plateStallGuesser
 
 
 # number of pixels that meet HSV threshold for it to consider a plate
-PLATE_GREY_TRHESHOLD = 500
+PLATE_GREY_TRHESHOLD = 100
 
 class imageConvert:
 
