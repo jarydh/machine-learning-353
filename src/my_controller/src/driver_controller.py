@@ -22,8 +22,8 @@ LIN_DEC = 1.5
 
 LIN_STOP = 0
 # note: do not try taking corners at speeds > 1, it will roll the car
-LIN_SLOW = 0.1
-LIN_FAST = 0.2
+LIN_SLOW = 0.29
+LIN_FAST = 0.7
 
 # through trial and error, discovered that instantaneous angular acceleration 
 # does not flip the car
@@ -31,9 +31,9 @@ LIN_FAST = 0.2
 # turn radius: the corners have a radius so the angular velocity should be set
 # to match v = rw so that the car can take the turns on slow speed
 RADIUS = 0.32 # approx
-ANG_RIGHT = -1 * LIN_SLOW / RADIUS
+ANG_RIGHT = ((-1 * LIN_SLOW)-0.2) / RADIUS
 ANG_STRAIGHT = 0
-ANG_LEFT = LIN_SLOW / RADIUS
+ANG_LEFT = ((LIN_SLOW) + 0.2) / RADIUS
 
 class driverController:
 

@@ -103,21 +103,31 @@ class imageConverter:
         # normal driving conditions
         else:
             status = "Normal Driving"
-            # first or second image
-            if len(self.imgs) < 3 :
-                self.imgs.append(new_img)
-                return
-            # all other cases
-            else:
-                self.imgs[0] = self.imgs[1]
-                self.imgs[1] = self.imgs[2]
-                self.imgs[2] = new_img
 
-            # check if NN is loaded before using
+            self.imgs = new_img
+
+            #check for NN
             if self.driver_predictor.isLoaded:
                 lin_speed, ang_speed = self.driver_predictor.get_drive_command(self.imgs)
             else:
                 return
+
+            ######## FROM 3-FRAME NN #########################
+            # # first or second image
+            # if len(self.imgs) < 3 :
+            #     self.imgs.append(new_img)
+            #     return
+            # # all other cases
+            # else:
+            #     self.imgs[0] = self.imgs[1]
+            #     self.imgs[1] = self.imgs[2]
+            #     self.imgs[2] = new_img
+
+            # # check if NN is loaded before using
+            # if self.driver_predictor.isLoaded:
+            #     lin_speed, ang_speed = self.driver_predictor.get_drive_command(self.imgs)
+            # else:
+            #     return
 
 
         # for debugging

@@ -9,6 +9,8 @@ import re
 import os
 import fnmatch
 import cv2
+import pandas
+from collections import Counter
 
 from datetime import datetime
 
@@ -33,7 +35,7 @@ directions = []
 
 pickle = driverPickler()
 
-for dirpath, dirs, files in os.walk(path + "driving_data/"):  
+for dirpath, dirs, files in os.walk(path + "lesley_driving_data/"):  
 	for filename in fnmatch.filter(files, '*_imgs.pickle'): 
 		timestamp = filename[0:19]
 		#file_path = os.path.join(dirpath, filename)
@@ -49,53 +51,56 @@ for dirpath, dirs, files in os.walk(path + "driving_data/"):
 	
 # plt.show()	
 # print(directions[0])
-# print(np.shape(images[0][0]))
+# print(np.shape(directions[0]))
+# print(np.shape(images[0]))
 # print(len(images))
 # print(len(images[0]))
 # print(len(images[1]))
 
-##The following 2 for loops group 3 images with their 'leading' label
+################GROUPING IMAGES INTO 3S##############################
+##The following 4 for loops group 3 images with their 'leading' label
+#!!!!!!!!!!!!##Rewritten to string all data together in one big array
 
-group_image = []
-group_directions = []
-
-count = 0
+all_image = []
+all_directions = []
 
 for i in range(0,len(images)):
-	for j in range(2,len(images[i])):
-
-		image_set = []
-
-		image_set.append(images[i][j-2])
-		image_set.append(images[i][j-1])
-		image_set.append(images[i][j])
-
-		for k in range(3):
-			img = image_set[k]
-			img = img.astype(float)
-			img_arr = np.asarray(img)
-			image_set[k] = img_arr
-
-		group_image.append(image_set)
-
-		count+=1 
+	for j in range(0,len(images[i])):
+		all_image.append(images[i][j])
 
 for i in range(0,len(directions)):
-	for j in range(2,len(directions[i])):
-		group_directions.append(directions[i][j])
+	for j in range(0,len(directions[i])):
+		all_directions.append(directions[i][j])
 
 
-# print(len(group_directions))
-# print(len(group_image))
-# print(image_set[0])
-# print(img)
+# print(np.shape(all_image))
+# print(np.shape(all_directions))
+
+##################### HISTOGRAM FO DATA LABELS ############################
+
+# data_list = all_directions[:]
+# data_list.sort()
+# #print(data_list[0:7])
+# counts = Counter(data_list)
+# #print(counts)
+
+# labels = counts.keys()
+# values = counts.values()
+
+# indexes = np.arange(len(labels))
+# width = 1
+
+# plt.bar(indexes, values, width)
+# plt.xticks(indexes + width * 0.5, labels)
+# plt.show()
 
 
-NUMBER_OF_LABELS = 9
-CONFIDENCE_THRESHOLD = 0.01
+##############################
+NUMBER_OF_LABELS = 9##########
+CONFIDENCE_THRESHOLD = 0.01###
+##############################
 
-
-##ONE HOT ENCODING####
+##########################ONE HOT ENCODING###################################
 #labels: [LIN_STOP, ANG_STRAIGHT], [LIN_STOP, ANG_RIGHT], [LIN_STOP, ANG_LEFT]
 #        [LIN_SLOW, ANG_STRAIGHT], [LIN_SLOW, aNG_RIGHT], [LIN_SLOW, ANG_LEFT]
 #		 [LIN_FAST, ANG_STRAIGHT], [LIN_FAST, ANG_RIGHT], [LIN-FAST, ANG_LEFT]
@@ -120,10 +125,10 @@ EIGHT = [0,0,0,0,0,0,0,1,0]
 #[LIN-FAST, ANG_LEFT]
 NINE = [0,0,0,0,0,0,0,0,1]
 
-one_hot_data = np.empty((len(group_directions),9))
+one_hot_data = np.empty((len(all_directions),9))
 index = 0
 
-for label in group_directions:
+for label in all_directions:
 
 	if label == (dc.LIN_STOP, dc.ANG_STRAIGHT):
 		one_hot_data[index] = ONE
@@ -146,39 +151,38 @@ for label in group_directions:
 
 	index += 1
 
-# print(np.shape(one_hot_data))
-# print(one_hot_data[8])
+#print(one_hot_data[4])
 
 ###NORMALIZING IMAGES####
 
-image_data = np.array(group_image)
-#print(image_data)
+image_data = np.array(all_image)
+image_data = image_data.astype(np.float32)
 image_data = image_data/255
-#print(image_data[4][0])
 
+# print(image_data[4][0])
 # print(np.shape(image_data))
 
 ##########################APPEND 3 IMAGES TOGETHER######################
-spot = 0
-dim1 = np.shape(image_data)[0]
-dim2 = np.shape(image_data)[2]
-dim3 = np.shape(image_data)[3]*3
-dim4 = np.shape(image_data)[4]
+# spot = 0
+# dim1 = np.shape(image_data)[0]
+# dim2 = np.shape(image_data)[2]
+# dim3 = np.shape(image_data)[3]*3
+# dim4 = np.shape(image_data)[4]
 
-image_Data = np.empty((dim2, dim3, dim4))
-image_Data = np.expand_dims(image_Data, axis =0)
-image_Data = np.repeat(image_Data, dim1, axis=0)
+# image_Data = np.empty((dim2, dim3, dim4))
+# image_Data = np.expand_dims(image_Data, axis =0)
+# image_Data = np.repeat(image_Data, dim1, axis=0)
 
-for group in image_data:
-	arr1 = np.array(group[0])
-	arr2 = np.array(group[1])
-	arr3 = np.array(group[2])
+# for group in image_data:
+# 	arr1 = np.array(group[0])
+# 	arr2 = np.array(group[1])
+# 	arr3 = np.array(group[2])
 
-	combined_arr = np.hstack((arr1, arr2, arr3))
+# 	combined_arr = np.hstack((arr1, arr2, arr3))
 
-	image_Data[spot] = combined_arr
+# 	image_Data[spot] = combined_arr
 
-	spot+=1
+# 	spot+=1
 
 # print(combined_arr)
 # print(np.shape(combined_arr))
@@ -188,7 +192,7 @@ for group in image_data:
 ######################SHUFFLE DATA######################
 all_data = []
 
-for img_idx, next_img in enumerate(image_Data):
+for img_idx, next_img in enumerate(image_data):
 	 	next_label = one_hot_data[img_idx]
 		data_pair = np.array([next_img, next_label])
 		all_data.append(data_pair)
@@ -201,9 +205,12 @@ np.random.shuffle(all_data)
 
 X_dataset = np.array([data[0] for data in all_data[:]])
 Y_dataset = np.array([data[1] for data in all_data])
-
 # print(np.shape(X_dataset))
 # print(np.shape(Y_dataset))
+
+#######################################################################################################
+##############################  NN PART  ##############################################################
+#######################################################################################################
 
 
 VALIDATION_SPLIT = 0.2
