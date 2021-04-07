@@ -6,10 +6,10 @@ import numpy as np
 import driver_controller as dc
 
 # number of frames for each
-LOOP_TRANSITION_FRAMES = [3, 18, 1, 3]
+LOOP_TRANSITION_FRAMES = [13, 18, 1, 3]
 
 # must be same length
-LOOP_TRANSITION_SPEEDS = [(dc.LIN_STOP, dc.ANG_STRAIGHT),
+LOOP_TRANSITION_SPEEDS = [(dc.LIN_SLOW, dc.ANG_STRAIGHT),
                           (dc.LIN_SLOW, dc.ANG_LEFT),
                           (dc.LIN_SLOW, dc.ANG_STRAIGHT),
                           (dc.LIN_STOP, dc.ANG_STRAIGHT)]
@@ -19,8 +19,8 @@ LEFT_TURN_FRAMES = [8, 18, 2]
 
 # must be same length
 LEFT_TURN_SPEEDS = [(dc.LIN_SLOW, dc.ANG_STRAIGHT),
-                          (dc.LIN_SLOW, dc.ANG_LEFT),
-                          (dc.LIN_SLOW, dc.ANG_STRAIGHT)]
+                    (dc.LIN_SLOW, dc.ANG_LEFT),
+                    (dc.LIN_SLOW, dc.ANG_STRAIGHT)]
 
 
 class manualDriver:

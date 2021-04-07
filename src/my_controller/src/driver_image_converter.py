@@ -32,6 +32,8 @@ SPEED_THROUGH_CROSSWALK = 0.2
 
 POSSIBLE_TRANSITION_STALLS = [1, 3, 4, 6]
 
+INNER_LOOP_SLOW_SCALE = 0.4
+
 class imageConverter:
 
     def __init__(self, driver_controller):
@@ -169,8 +171,8 @@ class imageConverter:
                 return
 
             if self.is_on_outer == False:
-                lin_speed = lin_speed / 2.5
-                ang_speed = ang_speed / 2.5
+                lin_speed = lin_speed * INNER_LOOP_SLOW_SCALE
+                ang_speed = ang_speed * INNER_LOOP_SLOW_SCALE
 
             ######## FROM 3-FRAME NN #########################
             # # first or second image
