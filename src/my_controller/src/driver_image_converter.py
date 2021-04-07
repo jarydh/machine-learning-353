@@ -168,6 +168,10 @@ class imageConverter:
             else:
                 return
 
+            if self.is_on_outer == False:
+                lin_speed = lin_speed / 2.5
+                ang_speed = ang_speed / 2.5
+
             ######## FROM 3-FRAME NN #########################
             # # first or second image
             # if len(self.imgs) < 3 :
@@ -216,10 +220,6 @@ class imageConverter:
             lineType)
         cv2.imshow("driving_prediction", show_img)
         cv2.waitKey(3)
-
-        if self.is_on_outer == False:
-            lin_speed = lin_speed / 2.
-            ang_speed = ang_speed / 2.
 
         self.driver.set_linear_speed(lin_speed)
         self.driver.set_angular_speed(ang_speed)

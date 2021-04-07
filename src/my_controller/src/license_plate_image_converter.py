@@ -37,7 +37,7 @@ class imageConvert:
     # call this if driving on the inner loop
     def inner_loop(self):
         self.on_outer_loop = False
-        self.guess_publisher.is_outer = False
+        self.guess_publisher.on_inner()
 
     # call this if driving on the outer loop
     def outer_loop(self):
@@ -131,7 +131,6 @@ class imageConvert:
         cropped_mask_hsv = hsv_img[:,left_crop:right_crop,:]
 
         # cv2.imshow("cropped_mask", cropped_mask)
-
 
         # blue section does not meet threshold to get meaningful data
         blue_width_min = 40

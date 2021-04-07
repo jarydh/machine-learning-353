@@ -4,8 +4,13 @@ import rospy as rp
 from std_msgs.msg import String
 import numpy as np
 
-PLATE_TIMEOUT = 1
-PLATE_MINIMUM = 3
+OUTER_PLATE_TIMEOUT = 1
+INNER_PLATE_TIMEOUT = 2
+
+OUTER_PLATE_MINIMUM = 3
+INNER_PLATE_MINIMUM = 5
+
+INNER_VALID_GUESS_THRESHOLD = 2
 
 class licenseTracker: 
 
@@ -18,6 +23,7 @@ class licenseTracker:
 		self.num_predictions = 0
 		self.stall_guesses = set()
 		self.is_outer = True
+		self.plate_timeout = OUTER_PLATE_TIMEOUT
 
 	# return None if the guess should be ignored, otherwise return corrected guess
 	def correct_plate(self, location_guess, plate_guess):
@@ -52,7 +58,11 @@ class licenseTracker:
 			pass
 
 		# start the countdown timer
-		self.plate_timer = rp.Timer(rp.Duration(PLATE_TIMEOUT), self.publish_prediction, oneshot=True)
+		self.plate_timer = rp.Timer(rp.Duration(self.plate_timeout), self.publish_prediction, oneshot=True)
+
+	def on_inner(self):
+		self.is_outer = False
+		self.plate_timeout = INNER_PLATE_TIMEOUT
 
 	# for now, this just returns the most recent guess but we could add functionality to 
 	# take the most common guess or something if that is better
@@ -63,15 +73,24 @@ class licenseTracker:
 
 	def publish_prediction(self, timer_event):
 		# check if there are actually any plate guesses and if there are enough plates detected
-		if len(self.current_plate_predictions) > 0  and self.num_predictions >= PLATE_MINIMUM:
-			location, plate = self.get_guess(self.current_plate_predictions)
-			self.ROS_publish(location, plate)
+		print(self.current_plate_predictions)
+		if self.is_outer:
+			if len(self.current_plate_predictions) > 0  and self.num_predictions >= OUTER_PLATE_MINIMUM:
+				location, plate = self.get_guess(self.current_plate_predictions)
+				self.ROS_publish(location, plate)
 
-			self.stall_guesses.add(location)
-			print("Guessed plate: " + str(len(self.stall_guesses)) + "/8")
-			if len(self.stall_guesses) >= 8:
-				self.sendStop()
-		
+				self.stall_guesses.add(location)
+				print("Guessed plate: " + str(len(self.stall_guesses)) + "/8")
+		else:
+			if len(self.current_plate_predictions) > INNER_VALID_GUESS_THRESHOLD  and self.num_predictions >= INNER_PLATE_MINIMUM:
+				location, plate = self.get_guess(self.current_plate_predictions)
+				self.ROS_publish(location, plate)
+
+				self.stall_guesses.add(location)
+				print("Guessed plate: " + str(len(self.stall_guesses)) + "/8")
+				if len(self.stall_guesses) >= 8:
+					self.sendStop()
+
 		self.current_plate_predictions = []
 		self.num_predictions = 0
 
