@@ -17,11 +17,17 @@ class licenseTracker:
 		self.current_plate_predictions = []
 		self.num_predictions = 0
 		self.stall_guesses = set()
+		self.is_outer = True
 
 	# return None if the guess should be ignored, otherwise return corrected guess
-	def correct_plate(self, plate_guess):
+	def correct_plate(self, location_guess, plate_guess):
 		if plate_guess[0].isalpha() and plate_guess[1].isalpha() and plate_guess[2].isdigit() and plate_guess[3].isdigit():
-			return plate_guess
+			if self.is_outer == True and location_guess > 6:
+				return None
+			elif self.is_outer == False and location_guess <=6:
+				return None
+			else:
+				return plate_guess
 		else:
 			# TODO: try and correct if the guess is close (1s to I, etc)
 			# This is almost better to do nothing, because we reject bad readings
@@ -32,7 +38,7 @@ class licenseTracker:
 		self.num_predictions += 1
 
 		# check if the prediction is valid
-		corrected_plate = self.correct_plate(plate)
+		corrected_plate = self.correct_plate(location, plate)
 
 		if corrected_plate is not None:
 			# add prediction to current predictions

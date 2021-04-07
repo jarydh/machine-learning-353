@@ -58,6 +58,7 @@ rospy.init_node('driver_keyboard')
 
 # driver object
 driver = dc.driverController(sim_time)
+driver.is_active = True
 
 # recorder object
 recorder = rec.driverImageRecorder(driver)

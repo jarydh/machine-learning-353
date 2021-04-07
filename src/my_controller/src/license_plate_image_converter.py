@@ -25,9 +25,9 @@ class imageConvert:
         self.bridge = CvBridge()
         self.image_sub = rp.Subscriber("/R1/pi_camera/image_raw", Image, self.new_image)
         self.drive_status_sub = rp.Subscriber("/driver_status", String, self.new_status)
+        self.guess_publisher = guess_publisher
         self.outer_loop()
         self.ps_guesser = plateStallGuesser()
-        self.guess_publisher = guess_publisher
 
     # new status update
     def new_status(self, data):
@@ -37,6 +37,7 @@ class imageConvert:
     # call this if driving on the inner loop
     def inner_loop(self):
         self.on_outer_loop = False
+        self.guess_publisher.is_outer = False
 
     # call this if driving on the outer loop
     def outer_loop(self):

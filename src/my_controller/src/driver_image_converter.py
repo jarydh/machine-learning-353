@@ -30,6 +30,8 @@ MOTION_PIXEL_THRESHOLD = 2
 CROSSWALK_DETECTION_COOLDOWN = 3 # seconds
 SPEED_THROUGH_CROSSWALK = 0.2
 
+POSSIBLE_TRANSITION_STALLS = [1, 3, 4, 6]
+
 class imageConverter:
 
     def __init__(self, driver_controller):
@@ -71,6 +73,7 @@ class imageConverter:
         # plate tracking variables
         self.stall_guess_sub = rospy.Subscriber("/stall_guess", String, self.new_plate_guess)
         self.stall_guesses = set()
+        self.most_recent_stall_guess = 0
 
     # whenever a new plate guess is made
     def new_plate_guess(self, data):
@@ -84,6 +87,7 @@ class imageConverter:
             # self.driver.is_active = False
         else:
             self.stall_guesses.add(data.data)
+            self.most_recent_stall_guess = int(data.data)
 
     def reset_crosswalk_detection(self, timer_event):
         self.croswalk_detection_enabled = True
@@ -107,7 +111,7 @@ class imageConverter:
         self.current_img = new_img
 
         # check if should move to inner loop
-        if len(self.stall_guesses) >= 6 and self.is_on_outer:
+        if len(self.stall_guesses) >= 6 and self.is_on_outer and self.most_recent_stall_guess in POSSIBLE_TRANSITION_STALLS:
             self.croswalk_detection_enabled = False
             self.is_transitioning_loops = True
         # check if at a crosswalk
@@ -212,6 +216,10 @@ class imageConverter:
             lineType)
         cv2.imshow("driving_prediction", show_img)
         cv2.waitKey(3)
+
+        if self.is_on_outer == False:
+            lin_speed = lin_speed / 2.
+            ang_speed = ang_speed / 2.
 
         self.driver.set_linear_speed(lin_speed)
         self.driver.set_angular_speed(ang_speed)
