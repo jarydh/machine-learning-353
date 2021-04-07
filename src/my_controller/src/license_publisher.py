@@ -73,7 +73,7 @@ class licenseTracker:
 
 	def publish_prediction(self, timer_event):
 		# check if there are actually any plate guesses and if there are enough plates detected
-		print(self.current_plate_predictions)
+		# print(self.current_plate_predictions)
 		if self.is_outer:
 			if len(self.current_plate_predictions) > 0  and self.num_predictions >= OUTER_PLATE_MINIMUM:
 				location, plate = self.get_guess(self.current_plate_predictions)
