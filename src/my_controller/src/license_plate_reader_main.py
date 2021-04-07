@@ -21,9 +21,9 @@ ic = imageConvert(guess_publisher)
 rp.init_node('license_main')
 
 # sleep for 4 seconds to let everything load
-# rp.sleep(4.)
+rp.sleep(4.)
 
-rp.sleep(1.)
+# rp.sleep(1.)
 
 # send the start command
 guess_publisher.sendStart()

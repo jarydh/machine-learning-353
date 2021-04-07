@@ -2,7 +2,6 @@
 
 import rospy as rp
 from std_msgs.msg import String
-from std_msgs.msg import Int16
 import numpy as np
 
 PLATE_TIMEOUT = 1
@@ -11,16 +10,17 @@ PLATE_MINIMUM = 3
 class licenseTracker: 
 
 	def __init__(self): 
-		self.license_pub = rp.Publisher('/license_plate', String, queue_size = 1)
-		self.stall_guess_pub = rp.Publisher('/stall_guess', Int16, queue_size = 1)
+		self.license_pub = rp.Publisher('/license_plate', String, queue_size = 2)
+		self.stall_guess_pub = rp.Publisher('/stall_guess', String, queue_size = 1)
 		self.teamID = 'teamid'
 		self.password = 'password'
 		self.current_plate_predictions = []
 		self.num_predictions = 0
+		self.stall_guesses = set()
 
 	# return None if the guess should be ignored, otherwise return corrected guess
 	def correct_plate(self, plate_guess):
-		if unicode(plate_guess[2:3], 'utf-8').isnumeric() and plate_guess[0:1].isalpha():
+		if plate_guess[0].isalpha() and plate_guess[1].isalpha() and plate_guess[2].isdigit() and plate_guess[3].isdigit():
 			return plate_guess
 		else:
 			# TODO: try and correct if the guess is close (1s to I, etc)
@@ -59,16 +59,12 @@ class licenseTracker:
 		# check if there are actually any plate guesses and if there are enough plates detected
 		if len(self.current_plate_predictions) > 0  and self.num_predictions >= PLATE_MINIMUM:
 			location, plate = self.get_guess(self.current_plate_predictions)
+			self.ROS_publish(location, plate)
 
-			location = str(location)
-			plate = str(plate)
-
-			message = str(self.teamID+','+self.password+','+location+','+plate)
-
-			self.license_pub.publish(message)		
-
-			# publish stall number
-			self.stall_guess_pub.publish(int(location))
+			self.stall_guesses.add(location)
+			print("Guessed plate: " + str(len(self.stall_guesses)) + "/8")
+			if len(self.stall_guesses) >= 8:
+				self.sendStop()
 		
 		self.current_plate_predictions = []
 		self.num_predictions = 0
@@ -76,13 +72,19 @@ class licenseTracker:
 
 	# send the stop command
 	def sendStart(self):
-		self.sendPlateID(0, "AA00")
-		# let the driver side know to start
-		self.stall_guess_pub.publish(100)
+		self.ROS_publish(0, "AA00")
 
 	# send the stop command
 	def sendStop(self):
-		self.sendPlateID(-1, "AA00")
-		# let the driver side know to stop
-		self.stall_guess_pub.publish(200)
+		self.ROS_publish(-1, "AA00")
 
+	def ROS_publish(self, location, plate):
+		location = str(location)
+		plate = str(plate)
+
+		message = str(self.teamID+','+self.password+','+location+','+plate)
+
+		self.license_pub.publish(message)		
+
+		# publish stall number
+		self.stall_guess_pub.publish(str(location))

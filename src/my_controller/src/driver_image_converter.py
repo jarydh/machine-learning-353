@@ -7,7 +7,6 @@ import cv2
 import numpy as np
 
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int16
 from std_msgs.msg import String
 
 
@@ -70,17 +69,19 @@ class imageConverter:
         self.is_transitioning_loops = False
 
         # plate tracking variables
-        self.stall_guess_sub = rospy.Subscriber("/stall_guess", Int16, self.new_plate_guess)
+        self.stall_guess_sub = rospy.Subscriber("/stall_guess", String, self.new_plate_guess)
         self.stall_guesses = set()
 
     # whenever a new plate guess is made
     def new_plate_guess(self, data):
         # special number for starting
-        if int(data.data) == 100:
+        if int(data.data) == 0:
             self.is_active = True
+            self.driver.is_active = True
         # special value for stopping
-        elif int(data.data) == 200:
+        elif int(data.data) == -1:
             self.is_active = False
+            # self.driver.is_active = False
         else:
             self.stall_guesses.add(data.data)
 

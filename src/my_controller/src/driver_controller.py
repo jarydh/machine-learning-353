@@ -46,6 +46,7 @@ class driverController:
 		self.target_angular_speed = 0
 		self.timer = timer
 		self.last_time_ms = timer.get_time_ms()
+		self.is_active = False
 
 	def set_linear_speed(self, speed):
 		self.target_linear_speed = float(speed)
@@ -60,6 +61,9 @@ class driverController:
 		return self.target_angular_speed
 
 	def drive(self):
+		if self.is_active == False:
+			return
+			
 		current_time = self.timer.get_time_ms()
 		time_elapsed = current_time - self.last_time_ms
 		self.last_time_ms = current_time
