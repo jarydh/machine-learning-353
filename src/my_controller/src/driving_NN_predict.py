@@ -91,7 +91,7 @@ class drivePrediction:
         # drive_NN.summary()
 
     ### Appends three images together - also normalizes data ###
-    ##### Not used anymroe due to new NN ####
+    ##### Not used anymore due to new NN ####
     def appendImages(self, image_triad):
         image_triad = np.array(image_triad)
         image_data = image_triad/255.

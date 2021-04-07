@@ -35,7 +35,7 @@ directions = []
 
 pickle = driverPickler()
 
-for dirpath, dirs, files in os.walk(path + "lesley_driving_data/"):  
+for dirpath, dirs, files in os.walk(path + "lesley_driving_data_inner_loop/"):  
 	for filename in fnmatch.filter(files, '*_imgs.pickle'): 
 		timestamp = filename[0:19]
 		#file_path = os.path.join(dirpath, filename)
