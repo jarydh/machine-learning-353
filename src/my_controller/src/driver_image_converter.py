@@ -103,6 +103,9 @@ class imageConverter:
         if self.is_waiting_for_motion == True:
             self.pause_before_turn = True
         
+    def reset_restrict_motion(self, timer_event):
+        self.motion_detection_count = 1
+
     # This method gets called whenever there is a new image on the image_raw topic
     def new_image(self, data):
         try:
@@ -154,6 +157,8 @@ class imageConverter:
             if not self.motion_detected:
                 self.is_waiting_for_motion = False
                 self.motion_detection_count += 1
+                if self.motion_detection_count == 2:
+                    rospy.Timer(rospy.Duration(5), self.reset_restrict_motion, oneshot=True)
                 # if on the outer loop, means we stopped for a crosswalk
                 if self.is_on_outer:
                     self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection, oneshot=True)
@@ -316,4 +321,4 @@ class imageConverter:
         # cv2.imshow("motion", difference_thresh)
         # print(np.max(masked_sum))
 
-        return np.max(masked_sum) > MOTION_PIXEL_THRESHOLD
+        return np.max(masked_sum) >= MOTION_PIXEL_THRESHOLD
