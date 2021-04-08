@@ -6,7 +6,7 @@ import numpy as np
 import driver_controller as dc
 
 # number of frames for each
-LOOP_TRANSITION_FRAMES = [13, 18, 1, 3]
+LOOP_TRANSITION_FRAMES = [13, 18, 2, 3]
 
 # must be same length
 LOOP_TRANSITION_SPEEDS = [(dc.LIN_SLOW, dc.ANG_STRAIGHT),
@@ -22,11 +22,21 @@ LEFT_TURN_SPEEDS = [(dc.LIN_SLOW, dc.ANG_STRAIGHT),
                     (dc.LIN_SLOW, dc.ANG_LEFT),
                     (dc.LIN_SLOW, dc.ANG_STRAIGHT)]
 
+# number of frames for each
+PAUSE_LEFT_TURN_FRAMES = [30, 8, 18, 2]
+
+# must be same length
+PAUSE_LEFT_TURN_SPEEDS = [(dc.LIN_STOP, dc.ANG_STRAIGHT),
+                    (dc.LIN_SLOW, dc.ANG_STRAIGHT),
+                    (dc.LIN_SLOW, dc.ANG_LEFT),
+                    (dc.LIN_SLOW, dc.ANG_STRAIGHT)]
+
 
 class manualDriver:
     def __init__(self):
         self.loop_transition_count = 0
         self.left_turn_count = 0
+        self.pause_left_turn_count = 0
 
         self.loop_transition_last_frame = []
         for i in range(0, len(LOOP_TRANSITION_FRAMES)):
@@ -35,6 +45,10 @@ class manualDriver:
         self.left_turn_last_frame = []
         for i in range(0, len(LEFT_TURN_FRAMES)):
             self.left_turn_last_frame.append(sum(LEFT_TURN_FRAMES[0:i + 1]))
+
+        self.pause_left_turn_last_frame = []
+        for i in range(0, len(PAUSE_LEFT_TURN_FRAMES)):
+            self.pause_left_turn_last_frame.append(sum(PAUSE_LEFT_TURN_FRAMES[0:i + 1]))
 
     # returns lin_speed, ang_speed, is_done  
     def loop_transition(self):
@@ -61,4 +75,17 @@ class manualDriver:
         is_done = self.left_turn_count == self.left_turn_last_frame[-1]
         if is_done:
             self.left_turn_count = 0
+        return (lin_speed, ang_speed, is_done)
+
+    def pause_left_turn(self):
+        for index, next_frame_boundary in enumerate(self.pause_left_turn_last_frame):
+            if self.pause_left_turn_count < next_frame_boundary:
+                lin_speed = PAUSE_LEFT_TURN_SPEEDS[index][0]
+                ang_speed = PAUSE_LEFT_TURN_SPEEDS[index][1]
+                break
+
+        self.pause_left_turn_count += 1
+        is_done = self.pause_left_turn_count == self.pause_left_turn_last_frame[-1]
+        if is_done:
+            self.pause_left_turn_count = 0
         return (lin_speed, ang_speed, is_done)

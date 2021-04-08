@@ -34,6 +34,8 @@ POSSIBLE_TRANSITION_STALLS = [1, 3, 4, 6]
 
 INNER_LOOP_SLOW_SCALE = 0.4
 
+TRUCK_DETECTION_TIMER = 1
+
 class imageConverter:
 
     def __init__(self, driver_controller):
@@ -71,6 +73,7 @@ class imageConverter:
         self.croswalk_detection_enabled = True
         self.is_on_outer = True
         self.is_transitioning_loops = False
+        self.pause_before_turn = False
 
         # plate tracking variables
         self.stall_guess_sub = rospy.Subscriber("/stall_guess", String, self.new_plate_guess)
@@ -93,6 +96,10 @@ class imageConverter:
 
     def reset_crosswalk_detection(self, timer_event):
         self.croswalk_detection_enabled = True
+
+    def set_transition_pause(self, timer_event):
+        if self.is_waiting_for_motion == True:
+            self.pause_before_turn = True
         
     # This method gets called whenever there is a new image on the image_raw topic
     def new_image(self, data):
@@ -127,8 +134,12 @@ class imageConverter:
             lin_speed = 0
             ang_speed = 0
         elif self.do_left_turn:
-            status = "Manual left turn"
-            lin_speed, ang_speed, is_done = self.manual_driver.left_turn()
+            if self.pause_before_turn:
+                status = "Manual left turn with pause"
+                lin_speed, ang_speed, is_done = self.manual_driver.pause_left_turn()
+            else:
+                status = "Manual left turn"            
+                lin_speed, ang_speed, is_done = self.manual_driver.left_turn()
             if is_done:
                 self.do_left_turn = False
         elif self.is_waiting_for_motion:
@@ -145,6 +156,10 @@ class imageConverter:
                     self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection, oneshot=True)
                 # if not, then it means we stopped for the truck
                 else:
+                    try:
+                        self.truck_waiting_timer.shutdown()
+                    except:
+                        pass
                     self.do_left_turn = True
         elif self.is_transitioning_loops:
             status = "Transitioning between loops"
@@ -156,6 +171,7 @@ class imageConverter:
                 self.driver_predictor = self.inner_driver_NN
                 self.is_waiting_for_motion = True
                 self.drive_status_pub.publish("Inner")
+                self.truck_waiting_timer = rospy.Timer(rospy.Duration(TRUCK_DETECTION_TIMER), self.set_transition_pause, oneshot=True)
         else:
             if self.is_on_outer:
                 status = "Driving Outer Loop"
