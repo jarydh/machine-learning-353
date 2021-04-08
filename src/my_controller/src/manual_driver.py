@@ -6,7 +6,7 @@ import numpy as np
 import driver_controller as dc
 
 # number of frames for each
-LOOP_TRANSITION_FRAMES = [13, 18, 2, 3]
+LOOP_TRANSITION_FRAMES = [15, 18, 2, 3]
 
 # must be same length
 LOOP_TRANSITION_SPEEDS = [(dc.LIN_SLOW, dc.ANG_STRAIGHT),

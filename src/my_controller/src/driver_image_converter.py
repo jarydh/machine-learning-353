@@ -13,6 +13,7 @@ from std_msgs.msg import String
 import cv_image_tools
 from driving_NN_predict import drivePrediction
 import manual_driver as md
+import driver_controller as dc
 
 PICTURE_SCALE_FACTOR = 0.2
 
@@ -74,6 +75,7 @@ class imageConverter:
         self.is_on_outer = True
         self.is_transitioning_loops = False
         self.pause_before_turn = False
+        self.motion_detection_count = 0
 
         # plate tracking variables
         self.stall_guess_sub = rospy.Subscriber("/stall_guess", String, self.new_plate_guess)
@@ -151,6 +153,7 @@ class imageConverter:
             # can resume normal driving
             if not self.motion_detected:
                 self.is_waiting_for_motion = False
+                self.motion_detection_count += 1
                 # if on the outer loop, means we stopped for a crosswalk
                 if self.is_on_outer:
                     self.crosswalk_cooldown_timer = rospy.Timer(rospy.Duration(CROSSWALK_DETECTION_COOLDOWN), self.reset_crosswalk_detection, oneshot=True)
@@ -189,6 +192,10 @@ class imageConverter:
             if self.is_on_outer == False:
                 lin_speed = lin_speed * INNER_LOOP_SLOW_SCALE
                 ang_speed = ang_speed * INNER_LOOP_SLOW_SCALE
+
+            if self.is_on_outer == True and self.motion_detection_count >= 2 and lin_speed == dc.LIN_FAST:
+                lin_speed = dc.LIN_SLOW
+                status = status + ", restricting speed."
 
             ######## FROM 3-FRAME NN #########################
             # # first or second image
